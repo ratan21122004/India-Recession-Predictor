@@ -8,3 +8,4 @@ __pycache__/
 .venv/
 venv/
 desktop.ini
+backend/finbert_finetuned/rbi_finbert/model.safetensors
