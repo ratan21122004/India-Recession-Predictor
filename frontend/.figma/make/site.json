@@ -1,0 +1,10 @@
+{
+  "description": "Monitor and analyze recession risks in India with comprehensive data visualizations, research tools, and collaboration features for researchers and analysts.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

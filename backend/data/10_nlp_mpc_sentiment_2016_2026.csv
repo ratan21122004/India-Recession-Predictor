@@ -1,0 +1,34 @@
+date,meeting,sentiment_score,tone,summary,source_document,data_type,finbert_equivalent
+2016-10-04,Oct 2016,0.15,Neutral to positive,6.25% hold. Accommodative.,rbi_mpc_oct2016.pdf,ESTIMATED (historical approximation),positive
+2017-02-08,Feb 2017,0.1,Neutral,Neutral. Inflation concern.,rbi_mpc_feb2017.pdf,ESTIMATED (historical approximation),neutral
+2017-04-06,Apr 2017,0.08,Neutral,Hold. Monitoring inflation.,rbi_mpc_apr2017.pdf,ESTIMATED (historical approximation),neutral
+2017-06-07,Jun 2017,0.12,Slightly positive,Growth concern. Hold.,rbi_mpc_jun2017.pdf,ESTIMATED (historical approximation),positive
+2017-08-02,Aug 2017,0.2,Positive,Cut to 6.0%. Accommodative.,rbi_mpc_aug2017.pdf,ESTIMATED (historical approximation),positive
+2018-02-07,Feb 2018,0.05,Neutral,Hold. Inflation vigilance.,rbi_mpc_feb2018.pdf,ESTIMATED (historical approximation),neutral
+2018-06-06,Jun 2018,-0.15,Slightly hawkish,Hike to 6.25%. Neutral stance.,rbi_mpc_jun2018.pdf,ESTIMATED (historical approximation),negative
+2018-08-01,Aug 2018,-0.2,Hawkish,Hike to 6.5%.,rbi_mpc_aug2018.pdf,ESTIMATED (historical approximation),negative
+2019-02-07,Feb 2019,0.18,Dovish,Cut to 6.25%. Neutral to accom.,rbi_mpc_feb2019.pdf,ESTIMATED (historical approximation),positive
+2019-04-04,Apr 2019,0.22,Dovish,Cut to 6.0%.,rbi_mpc_apr2019.pdf,ESTIMATED (historical approximation),positive
+2019-06-06,Jun 2019,0.25,Dovish,Cut to 5.75%.,rbi_mpc_jun2019.pdf,ESTIMATED (historical approximation),positive
+2019-08-07,Aug 2019,0.3,Dovish,Cut to 5.4%.,rbi_mpc_aug2019.pdf,ESTIMATED (historical approximation),positive
+2019-10-04,Oct 2019,0.28,Dovish,Cut to 5.15%.,rbi_mpc_oct2019.pdf,ESTIMATED (historical approximation),positive
+2020-03-27,Mar 2020,-0.72,Very negative,Emergency 75bps cut. COVID crisis.,rbi_mpc_mar2020.pdf,ESTIMATED (historical approximation),negative
+2020-05-22,May 2020,-0.68,Very negative,40bps cut. 4.0%. Accommodative.,rbi_mpc_may2020.pdf,ESTIMATED (historical approximation),negative
+2020-08-06,Aug 2020,-0.45,Negative,Hold. Recovery uncertain.,rbi_mpc_aug2020.pdf,ESTIMATED (historical approximation),negative
+2020-10-09,Oct 2020,-0.3,Negative,Hold. Some green shoots.,rbi_mpc_oct2020.pdf,ESTIMATED (historical approximation),negative
+2021-04-07,Apr 2021,-0.25,Slightly negative,Hold. 2nd wave risk.,rbi_mpc_apr2021.pdf,ESTIMATED (historical approximation),negative
+2021-08-06,Aug 2021,0.1,Neutral,Hold. Recovery on track.,rbi_mpc_aug2021.pdf,ESTIMATED (historical approximation),neutral
+2022-05-04,May 2022,-0.3,Hawkish,Off-cycle 40bps hike. War inflation.,rbi_mpc_may2022.pdf,ESTIMATED (historical approximation),negative
+2022-06-08,Jun 2022,-0.35,Hawkish,50bps hike. Inflation fight.,rbi_mpc_jun2022.pdf,ESTIMATED (historical approximation),negative
+2022-09-30,Sep 2022,-0.28,Hawkish,50bps. Focused on inflation.,rbi_mpc_sep2022.pdf,ESTIMATED (historical approximation),negative
+2023-02-08,Feb 2023,-0.18,Slightly hawkish,Terminal 6.5%. Withdrawal.,rbi_mpc_feb2023.pdf,ESTIMATED (historical approximation),negative
+2023-08-10,Aug 2023,-0.05,Neutral,Hold. Growth improving.,rbi_mpc_aug2023.pdf,ESTIMATED (historical approximation),neutral
+2024-02-08,Feb 2024,0.05,Neutral,Hold. Last mile inflation.,rbi_mpc_feb2024.pdf,ESTIMATED (historical approximation),neutral
+2024-10-09,Oct 2024,0.1,Neutral to dovish,Hold. Stance change signal.,rbi_mpc_oct2024.pdf,ESTIMATED (historical approximation),neutral
+2025-02-07,Feb 2025,-0.37,Negative/Cautious,"REAL: pos=21,neg=27. Cut to 6.25%. Accommodative stance.",Monetary_Policy_Statement_2025-26.pdf,REAL (extracted from uploaded PDF),negative
+2025-04-09,Apr 2025,-0.2,Slightly negative,"REAL: pos=17,neg=20. Cut to 6.0%. Neutral.",Resolution_Apr_2025.pdf,REAL (extracted from uploaded PDF),negative
+2025-06-06,Jun 2025,0.23,Slightly positive,"REAL: pos=25,neg=24. 50bps cut to 5.5%.",Resolution_Jun_2025.pdf,REAL (extracted from uploaded PDF),positive
+2025-08-06,Aug 2025,-0.31,Negative,"REAL: pos=20,neg=25. Hold. Neutral.",Resolution_Aug_2025.pdf,REAL (extracted from uploaded PDF),negative
+2025-10-01,Oct 2025,0.45,Positive,"REAL: pos=31,neg=27. Hold. Growth upgraded 6.8%.",Resolution_Oct_2025.pdf,REAL (extracted from uploaded PDF),positive
+2025-12-05,Dec 2025,-0.89,Very negative,"REAL: pos=17,neg=28. Cut 25bps. Deflation concern.",Resolution_Dec_2025.pdf,REAL (extracted from uploaded PDF),negative
+2026-02-07,Feb 2026,0.81,Very positive,"REAL: pos=65,neg=32. Hold. Growth 7.4%. Trade deals.",governors_statemnets_feb_6_2026.pdf,REAL (extracted from uploaded PDF),positive
