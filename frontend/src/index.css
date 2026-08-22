@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import 'tailwindcss';
+
+:root {
+  --page-bg: #07101F;
+  --surface-1: #0C1A2E;
+  --surface-2: #0F2040;
+  --surface-3: #162B52;
+  --border-subtle: #1B3058;
+  --border-mid: #243E6B;
+  --text-primary: #E2E8F4;
+  --text-muted: #7A93B8;
+  --text-faint: #3E5A82;
+  --accent-blue: #3B82F6;
+  --accent-red: #EF4444;
+  --accent-amber: #F59E0B;
+  --accent-green: #22C55E;
+  --accent-teal: #14B8A6;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1B3058 transparent;
+}
+
+*::-webkit-scrollbar { width: 5px; height: 5px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 3px; }
+
+body {
+  background-color: var(--page-bg);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display { font-family: 'Fraunces', serif; }
+.font-mono-data { font-family: 'JetBrains Mono', monospace; }
+
+.recharts-text { fill: var(--text-muted) !important; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.recharts-cartesian-axis-line, .recharts-cartesian-axis-tick-line { stroke: var(--border-subtle) !important; }
+.recharts-cartesian-grid line { stroke: var(--border-subtle) !important; }

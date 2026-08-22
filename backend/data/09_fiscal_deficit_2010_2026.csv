@@ -1,0 +1,18 @@
+fiscal_year,date,fiscal_deficit_pct_gdp,combined_deficit_pct_gdp,notes,source
+FY2010,2010-03-31,6.5,10.4,Post-GFC stimulus,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2011,2011-03-31,4.9,9.2,,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2012,2012-03-31,5.8,9.5,Fiscal slippage,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2013,2013-03-31,4.9,9.2,,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2014,2014-03-31,4.5,8.5,,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2015,2015-03-31,4.0,7.2,Consolidation,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2016,2016-03-31,3.5,6.5,,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2017,2017-03-31,3.5,6.2,Demonetisation year,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2018,2018-03-31,3.5,6.0,,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2019,2019-03-31,3.4,5.8,,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2020,2020-03-31,4.6,7.2,Pre-COVID slippage,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2021,2021-03-31,9.2,13.1,COVID emergency spend,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2022,2022-03-31,6.7,10.3,Recovery,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2023,2023-03-31,6.4,9.8,,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2024,2024-03-31,5.8,9.2,,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2025,2025-03-31,4.9,8.8,Revised estimate,Union Budget / Controller General of Accounts / RBI State Finances Report
+FY2026,2026-03-31,4.5,8.5,Budget estimate,Union Budget / Controller General of Accounts / RBI State Finances Report

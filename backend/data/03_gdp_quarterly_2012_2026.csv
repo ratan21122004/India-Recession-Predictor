@@ -1,0 +1,59 @@
+quarter,date,gdp_growth_pct,revised_pct,notes,fiscal_year,source,base_year
+2012-Q1,2012-04-01,5.1,,At factor cost,FY13,MOSPI National Accounts / RBI MPC Statements,2011-12
+2012-Q2,2012-07-01,5.4,,,FY13,MOSPI National Accounts / RBI MPC Statements,2011-12
+2012-Q3,2012-10-01,4.6,,,FY13,MOSPI National Accounts / RBI MPC Statements,2011-12
+2012-Q4,2013-01-01,4.8,,,FY13,MOSPI National Accounts / RBI MPC Statements,2011-12
+2013-Q1,2013-04-01,4.6,,,FY14,MOSPI National Accounts / RBI MPC Statements,2011-12
+2013-Q2,2013-07-01,5.2,,,FY14,MOSPI National Accounts / RBI MPC Statements,2011-12
+2013-Q3,2013-10-01,4.8,,,FY14,MOSPI National Accounts / RBI MPC Statements,2011-12
+2013-Q4,2014-01-01,4.6,,,FY14,MOSPI National Accounts / RBI MPC Statements,2011-12
+2014-Q1,2014-04-01,5.7,,,FY15,MOSPI National Accounts / RBI MPC Statements,2011-12
+2014-Q2,2014-07-01,6.0,,,FY15,MOSPI National Accounts / RBI MPC Statements,2011-12
+2014-Q3,2014-10-01,6.2,,,FY15,MOSPI National Accounts / RBI MPC Statements,2011-12
+2014-Q4,2015-01-01,6.5,,,FY15,MOSPI National Accounts / RBI MPC Statements,2011-12
+2015-Q1,2015-04-01,7.0,,Strong growth,FY16,MOSPI National Accounts / RBI MPC Statements,2011-12
+2015-Q2,2015-07-01,7.2,,,FY16,MOSPI National Accounts / RBI MPC Statements,2011-12
+2015-Q3,2015-10-01,7.5,,,FY16,MOSPI National Accounts / RBI MPC Statements,2011-12
+2015-Q4,2016-01-01,7.3,,,FY16,MOSPI National Accounts / RBI MPC Statements,2011-12
+2016-Q1,2016-04-01,7.8,,,FY17,MOSPI National Accounts / RBI MPC Statements,2011-12
+2016-Q2,2016-07-01,7.5,,,FY17,MOSPI National Accounts / RBI MPC Statements,2011-12
+2016-Q3,2016-10-01,6.8,,Demonetisation hit,FY17,MOSPI National Accounts / RBI MPC Statements,2011-12
+2016-Q4,2017-01-01,6.5,,,FY17,MOSPI National Accounts / RBI MPC Statements,2011-12
+2017-Q1,2017-04-01,6.1,,GST transition,FY18,MOSPI National Accounts / RBI MPC Statements,2011-12
+2017-Q2,2017-07-01,5.7,,,FY18,MOSPI National Accounts / RBI MPC Statements,2011-12
+2017-Q3,2017-10-01,6.3,,,FY18,MOSPI National Accounts / RBI MPC Statements,2011-12
+2017-Q4,2018-01-01,7.2,,,FY18,MOSPI National Accounts / RBI MPC Statements,2011-12
+2018-Q1,2018-04-01,8.1,,Strong capex,FY19,MOSPI National Accounts / RBI MPC Statements,2011-12
+2018-Q2,2018-07-01,7.0,,,FY19,MOSPI National Accounts / RBI MPC Statements,2011-12
+2018-Q3,2018-10-01,6.6,,NBFC crisis,FY19,MOSPI National Accounts / RBI MPC Statements,2011-12
+2018-Q4,2019-01-01,6.3,,,FY19,MOSPI National Accounts / RBI MPC Statements,2011-12
+2019-Q1,2019-04-01,5.8,,Slowdown begins,FY20,MOSPI National Accounts / RBI MPC Statements,2011-12
+2019-Q2,2019-07-01,5.0,,,FY20,MOSPI National Accounts / RBI MPC Statements,2011-12
+2019-Q3,2019-10-01,4.2,,Pre-COVID low,FY20,MOSPI National Accounts / RBI MPC Statements,2011-12
+2019-Q4,2020-01-01,4.3,,,FY20,MOSPI National Accounts / RBI MPC Statements,2011-12
+2020-Q1,2020-04-01,-23.9,-24.4,COVID crash,FY21,MOSPI National Accounts / RBI MPC Statements,2011-12
+2020-Q2,2020-07-01,-7.4,-7.3,,FY21,MOSPI National Accounts / RBI MPC Statements,2011-12
+2020-Q3,2020-10-01,0.5,0.7,Recovery,FY21,MOSPI National Accounts / RBI MPC Statements,2011-12
+2020-Q4,2021-01-01,1.6,2.0,,FY21,MOSPI National Accounts / RBI MPC Statements,2011-12
+2021-Q1,2021-04-01,20.1,18.5,Base effect,FY22,MOSPI National Accounts / RBI MPC Statements,2011-12
+2021-Q2,2021-07-01,8.4,8.5,,FY22,MOSPI National Accounts / RBI MPC Statements,2011-12
+2021-Q3,2021-10-01,5.4,5.5,,FY22,MOSPI National Accounts / RBI MPC Statements,2011-12
+2021-Q4,2022-01-01,4.1,4.0,,FY22,MOSPI National Accounts / RBI MPC Statements,2011-12
+2022-Q1,2022-04-01,13.1,13.5,War + recovery,FY23,MOSPI National Accounts / RBI MPC Statements,2011-12
+2022-Q2,2022-07-01,6.3,6.2,,FY23,MOSPI National Accounts / RBI MPC Statements,2011-12
+2022-Q3,2022-10-01,4.4,4.3,,FY23,MOSPI National Accounts / RBI MPC Statements,2011-12
+2022-Q4,2023-01-01,6.1,6.0,,FY23,MOSPI National Accounts / RBI MPC Statements,2011-12
+2023-Q1,2023-04-01,7.8,8.2,Strong capex,FY24,MOSPI National Accounts / RBI MPC Statements,2011-12
+2023-Q2,2023-07-01,7.6,7.8,,FY24,MOSPI National Accounts / RBI MPC Statements,2011-12
+2023-Q3,2023-10-01,8.4,8.6,,FY24,MOSPI National Accounts / RBI MPC Statements,2011-12
+2023-Q4,2024-01-01,7.8,7.6,,FY24,MOSPI National Accounts / RBI MPC Statements,2011-12
+2024-Q1,2024-04-01,6.7,6.5,Election quarter,FY25,MOSPI National Accounts / RBI MPC Statements,2011-12
+2024-Q2,2024-07-01,5.4,5.1,,FY25,MOSPI National Accounts / RBI MPC Statements,2011-12
+2024-Q3,2024-10-01,6.4,6.5,,FY25,MOSPI National Accounts / RBI MPC Statements,2011-12
+2024-Q4,2025-01-01,6.5,6.5,,FY25,MOSPI National Accounts / RBI MPC Statements,2011-12
+2025-Q1,2025-04-01,7.4,7.5,RBI MPC projection,FY26,MOSPI National Accounts / RBI MPC Statements,2011-12
+2025-Q2,2025-07-01,7.0,7.0,,FY26,MOSPI National Accounts / RBI MPC Statements,2011-12
+2025-Q3,2025-10-01,6.9,6.8,,FY26,MOSPI National Accounts / RBI MPC Statements,2011-12
+2025-Q4,2026-01-01,6.5,,,FY26,MOSPI National Accounts / RBI MPC Statements,2011-12
+2026-Q1,2026-04-01,6.9,,RBI proj Feb 2026,FY27,MOSPI National Accounts / RBI MPC Statements,2011-12
+2026-Q2,2026-07-01,7.0,,,FY27,MOSPI National Accounts / RBI MPC Statements,2011-12

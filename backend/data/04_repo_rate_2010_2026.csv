@@ -1,0 +1,48 @@
+date,repo_rate_pct,action,notes,reverse_repo_rate_pct,msf_rate_pct,crr_pct,source
+2010-03-19,5.0,Hike,Tightening cycle,4.75,5.25,4.0,RBI MPC Resolutions / RBI Website
+2010-04-20,5.25,Hike,,5.0,5.5,4.0,RBI MPC Resolutions / RBI Website
+2010-07-27,5.75,Hike,,5.5,6.0,4.0,RBI MPC Resolutions / RBI Website
+2010-09-16,6.0,Hike,,5.75,6.25,4.0,RBI MPC Resolutions / RBI Website
+2011-05-03,7.25,Hike,,7.0,7.5,4.0,RBI MPC Resolutions / RBI Website
+2011-06-16,7.5,Hike,,7.25,7.75,4.0,RBI MPC Resolutions / RBI Website
+2011-07-26,8.0,Hike,,7.75,8.25,4.0,RBI MPC Resolutions / RBI Website
+2011-10-25,8.5,Hike,Peak tightening,8.25,8.75,4.0,RBI MPC Resolutions / RBI Website
+2012-04-17,8.0,Cut,Easing begins,7.75,8.25,4.0,RBI MPC Resolutions / RBI Website
+2012-10-30,7.5,Cut,,7.25,7.75,4.0,RBI MPC Resolutions / RBI Website
+2013-01-29,7.75,Hike,Inflation concern,7.5,8.0,4.0,RBI MPC Resolutions / RBI Website
+2013-03-19,7.5,Cut,,7.25,7.75,4.0,RBI MPC Resolutions / RBI Website
+2013-09-20,7.5,Hold,,7.25,7.75,4.0,RBI MPC Resolutions / RBI Website
+2013-10-29,7.75,Hike,Rajan takes over,7.5,8.0,4.0,RBI MPC Resolutions / RBI Website
+2014-01-28,8.0,Hike,,7.75,8.25,4.0,RBI MPC Resolutions / RBI Website
+2014-06-03,8.0,Hold,,7.75,8.25,4.0,RBI MPC Resolutions / RBI Website
+2015-01-15,7.75,Cut,Surprise cut,7.5,8.0,4.0,RBI MPC Resolutions / RBI Website
+2015-03-04,7.5,Cut,,7.25,7.75,4.0,RBI MPC Resolutions / RBI Website
+2015-09-29,6.75,Cut,,6.5,7.0,4.0,RBI MPC Resolutions / RBI Website
+2016-04-05,6.5,Cut,,6.25,6.75,4.0,RBI MPC Resolutions / RBI Website
+2016-10-04,6.25,Cut,,6.0,6.5,4.0,RBI MPC Resolutions / RBI Website
+2017-08-02,6.0,Cut,,5.75,6.25,4.0,RBI MPC Resolutions / RBI Website
+2018-06-06,6.25,Hike,,6.0,6.5,4.0,RBI MPC Resolutions / RBI Website
+2018-08-01,6.5,Hike,,6.25,6.75,4.0,RBI MPC Resolutions / RBI Website
+2019-02-07,6.25,Cut,,6.0,6.5,4.0,RBI MPC Resolutions / RBI Website
+2019-04-04,6.0,Cut,,5.75,6.25,4.0,RBI MPC Resolutions / RBI Website
+2019-06-06,5.75,Cut,,5.5,6.0,4.0,RBI MPC Resolutions / RBI Website
+2019-08-07,5.4,Cut,,5.15,5.65,4.0,RBI MPC Resolutions / RBI Website
+2019-10-04,5.15,Cut,Pre-COVID easing,4.9,5.4,4.0,RBI MPC Resolutions / RBI Website
+2020-03-27,4.4,Cut,COVID emergency,4.15,4.65,4.0,RBI MPC Resolutions / RBI Website
+2020-05-22,4.0,Cut,Record low,3.75,4.25,4.0,RBI MPC Resolutions / RBI Website
+2022-05-04,4.4,Hike,Inflation surge,4.15,4.65,4.0,RBI MPC Resolutions / RBI Website
+2022-06-08,4.9,Hike,,4.65,5.15,4.0,RBI MPC Resolutions / RBI Website
+2022-08-05,5.4,Hike,,5.15,5.65,4.0,RBI MPC Resolutions / RBI Website
+2022-09-30,5.9,Hike,,5.65,6.15,4.0,RBI MPC Resolutions / RBI Website
+2022-12-07,6.25,Hike,,6.0,6.5,4.0,RBI MPC Resolutions / RBI Website
+2023-02-08,6.5,Hike,Terminal rate,6.25,6.75,4.0,RBI MPC Resolutions / RBI Website
+2023-04-06,6.5,Hold,,6.25,6.75,4.0,RBI MPC Resolutions / RBI Website
+2024-02-08,6.5,Hold,Long pause,6.25,6.75,4.0,RBI MPC Resolutions / RBI Website
+2024-10-09,6.5,Hold,,6.25,6.75,4.0,RBI MPC Resolutions / RBI Website
+2025-02-07,6.25,Cut,Easing cycle begins,6.0,6.5,4.0,RBI MPC Resolutions / RBI Website
+2025-04-09,6.0,Cut,,5.75,6.25,4.0,RBI MPC Resolutions / RBI Website
+2025-06-06,5.5,Cut,50bps cut,5.25,5.75,4.0,RBI MPC Resolutions / RBI Website
+2025-08-06,5.5,Hold,,5.25,5.75,4.0,RBI MPC Resolutions / RBI Website
+2025-10-01,5.5,Hold,,5.25,5.75,4.0,RBI MPC Resolutions / RBI Website
+2025-12-05,5.25,Cut,,5.0,5.5,4.0,RBI MPC Resolutions / RBI Website
+2026-02-07,5.25,Hold,Cumulative 125bps cut,5.0,5.5,4.0,RBI MPC Resolutions / RBI Website
