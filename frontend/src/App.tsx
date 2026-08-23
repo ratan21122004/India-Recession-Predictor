@@ -15,7 +15,7 @@ type Page = 'home' | 'episodes' | 'documents' | 'forecast' | 'login' | 'register
 const noNavPages: Page[] = ['login', 'register']
 
 export default function App() {
-  const [page, setPage] = useState<Page>('home')
+  const [page, setPage] = useState<Page>('login')
   const navigate = (p: string) => setPage(p as Page)
 
   const showNav = !noNavPages.includes(page)
