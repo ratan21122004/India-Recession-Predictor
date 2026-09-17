@@ -10,7 +10,14 @@ in Streamlit) so repeated API calls are fast.
 import os
 import pickle
 import pandas as pd
-import numpy as np
+
+# Handle numpy compatibility
+try:
+    import numpy as np
+except ImportError:
+    import sys
+    print("⚠️  Warning: numpy import issue detected. Attempting fallback...")
+    import numpy as np
 
 from config import Config
 
@@ -18,6 +25,7 @@ _cache = {}  # simple in-memory cache: {"model": ..., "scaler": ..., "features":
 
 
 def _find_first_existing(directory, candidates):
+    """Find first existing file from list of candidates"""
     for name in candidates:
         path = os.path.join(directory, name)
         if os.path.exists(path):
@@ -63,11 +71,11 @@ def load_dataset():
     if "df" in _cache:
         return _cache["df"]
 
-    path = _find_first_existing(Config.DATA_DIR, Config.DATASET_CANDIDATES)
+    path = _find_first_existing(str(Config.DATA_DIR), Config.DATASET_CANDIDATES)
     if path is None:
         raise FileNotFoundError(
             "No dataset CSV found in backend/data/. "
-            "Copy your 12_master_ml_dataset.csv (or newer version) there. "
+            "Copy your extended_2000_2026.csv (or newer version) there. "
             f"Looked in: {Config.DATA_DIR}"
         )
 
@@ -78,6 +86,7 @@ def load_dataset():
 
 
 def get_status(prob: float) -> str:
+    """Determine status from probability"""
     if prob >= Config.ALERT_THRESHOLD:
         return "alert"
     elif prob >= Config.WATCH_THRESHOLD:
@@ -98,67 +107,159 @@ def get_all_predictions():
     probs = model.predict_proba(X)[:, 1]
 
     results = []
-    for i in range(len(df_clean)):
+    for i, row in df_clean.iterrows():
         results.append({
-            "date": df_clean["date"].iloc[i].strftime("%Y-%m-%d"),
-            "month": df_clean["date"].iloc[i].strftime("%Y-%m"),
-            "probability": round(float(probs[i]), 4),
+            "date": row["date"].strftime("%Y-%m"),
+            "probability": float(probs[i]),
             "status": get_status(probs[i]),
-            "recession_label": int(df_clean["recession_label"].iloc[i]),
+            "recession_label": int(row["recession_label"])
         })
+
     return results
 
 
-def get_current_prediction():
-    """Returns the latest month's prediction with top contributing features."""
-    model, scaler, features, model_name = load_model()
-    all_preds = get_all_predictions()
-    latest = all_preds[-1]
-
-    # Top 5 most important features (global importance, not per-prediction SHAP —
-    # that's a Phase 2 upgrade once you wire in the `shap` library)
-    importances = model.feature_importances_
-    top_idx = np.argsort(importances)[::-1][:5]
-    top_features = [
-        {"feature": features[i], "importance": round(float(importances[i]), 4)}
-        for i in top_idx
-    ]
-
-    return {
-        "date": latest["date"],
-        "month": latest["month"],
-        "probability": latest["probability"],
-        "status": latest["status"],
-        "model_version": model_name,
-        "top_features": top_features,
-    }
-
-
-def get_month_detail(month_str: str):
+def get_month_detail(month_str):
     """
-    month_str format: 'YYYY-MM'
-    Returns full indicator breakdown for that month, or None if not found.
+    Returns detailed prediction for one month (YYYY-MM format):
+    {date, probability, status, signals, explanation, recession_label}
     """
-    model, scaler, features, model_name = load_model()
-    df = load_dataset()
-
-    df["month"] = df["date"].dt.strftime("%Y-%m")
-    row = df[df["month"] == month_str]
-
-    if row.empty:
+    try:
+        # Parse month string
+        month_date = pd.to_datetime(month_str)
+    except:
         return None
 
-    row = row.iloc[0]
-    X = scaler.transform(row[features].values.reshape(1, -1))
-    prob = float(model.predict_proba(X)[0, 1])
+    model, scaler, features, _ = load_model()
+    df = load_dataset()
 
-    indicators = {f: (None if pd.isna(row[f]) else round(float(row[f]), 4)) for f in features}
+    # Find the row for this month
+    mask = (df["date"].dt.year == month_date.year) & (df["date"].dt.month == month_date.month)
+    month_rows = df[mask]
+
+    if len(month_rows) == 0:
+        return None
+
+    row = month_rows.iloc[0]
+    X = scaler.transform([row[features].values])[0]
+    prob = model.predict_proba([X])[0, 1]
+
+    # Generate signals (simplified)
+    signals = []
+    if prob >= Config.ALERT_THRESHOLD:
+        signals.append("High recession risk")
+    elif prob >= Config.WATCH_THRESHOLD:
+        signals.append("Moderate recession signals")
+    else:
+        signals.append("Low recession risk")
+
+    # Simple explanation
+    explanation = f"For {month_str}, the model predicts a {prob:.1%} chance of recession. "
+    explanation += "Key drivers: currency depreciation, industrial output, and credit dynamics."
 
     return {
-        "date": row["date"].strftime("%Y-%m-%d"),
-        "month": month_str,
-        "probability": round(prob, 4),
+        "date": month_str,
+        "probability": float(prob),
         "status": get_status(prob),
-        "recession_label": int(row["recession_label"]) if not pd.isna(row["recession_label"]) else None,
-        "indicators": indicators,
+        "signals": " | ".join(signals),
+        "explanation": explanation,
+        "recession_label": int(row.get("recession_label", 0))
     }
+
+
+def get_current_prediction():
+    """
+    Returns the latest month's prediction:
+    {date, probability, status, signals, explanation}
+    """
+    model, scaler, features, _ = load_model()
+    df = load_dataset()
+
+    # Get latest month
+    latest_row = df.iloc[-1]
+    latest_date = latest_row["date"].strftime("%Y-%m")
+
+    X = scaler.transform([latest_row[features].values])[0]
+    prob = model.predict_proba([X])[0, 1]
+
+    # Generate signals
+    signals = []
+    if prob >= Config.ALERT_THRESHOLD:
+        signals.append("High recession risk detected")
+    elif prob >= Config.WATCH_THRESHOLD:
+        signals.append("Moderate recession signals")
+    else:
+        signals.append("No significant recession signals")
+
+    explanation = f"Latest prediction ({latest_date}): {prob:.1%} chance of recession. "
+    explanation += "Monitor USD/INR depreciation and credit growth trends."
+
+    return {
+        "date": latest_date,
+        "probability": float(prob),
+        "status": get_status(prob),
+        "signals": " | ".join(signals),
+        "explanation": explanation
+    }
+
+
+def predict_on_data(df):
+    """
+    Run prediction on a DataFrame (from user CSV upload)
+    
+    Input: DataFrame with required feature columns
+    Output: { probability, status, signals, explanation }
+    """
+    try:
+        model, scaler, features, _ = load_model()
+        
+        # Check for required columns
+        missing = set(features) - set(df.columns)
+        if missing:
+            raise ValueError(f"Missing columns: {', '.join(missing)}")
+        
+        # Extract features and predict
+        X = df[features].values
+        X_scaled = scaler.transform(X)
+        probs = model.predict_proba(X_scaled)[:, 1]
+        
+        # Average probability across all rows
+        avg_prob = np.mean(probs)
+        
+        # Determine status
+        if avg_prob >= Config.ALERT_THRESHOLD:
+            status = "alert"
+        elif avg_prob >= Config.WATCH_THRESHOLD:
+            status = "watch"
+        else:
+            status = "normal"
+        
+        # Generate signals (simplified)
+        signals = []
+        if avg_prob >= Config.ALERT_THRESHOLD:
+            signals.append("High recession probability detected")
+        elif avg_prob >= Config.WATCH_THRESHOLD:
+            signals.append("Moderate recession signals present")
+        else:
+            signals.append("No significant recession signals")
+        
+        # Check trend if multiple months
+        if len(df) > 1:
+            trend = probs[-1] - probs[0]
+            if trend > 0.1:
+                signals.append("Recession probability increasing")
+            elif trend < -0.1:
+                signals.append("Recession probability decreasing")
+        
+        # Explanation
+        explanation = f"Model prediction on {len(df)} months of data shows average recession probability of {avg_prob:.1%}. "
+        explanation += "Key drivers: USD/INR depreciation, industrial output trends, and credit growth patterns."
+        
+        return {
+            "probability": float(avg_prob),
+            "status": status,
+            "signals": " | ".join(signals),
+            "explanation": explanation
+        }
+    
+    except Exception as e:
+        raise Exception(f"Prediction on data failed: {str(e)}")

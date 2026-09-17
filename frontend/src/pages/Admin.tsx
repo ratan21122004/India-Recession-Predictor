@@ -1,412 +1,952 @@
-import React, { useState } from 'react'
+import { useState, useEffect } from "react";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from "recharts";
 
-type AdminTab = 'dashboard' | 'users' | 'documents' | 'data' | 'model' | 'audit' | 'settings'
-
-const adminSidebarItems: { tab: AdminTab; label: string }[] = [
-  { tab: 'dashboard', label: 'Dashboard' },
-  { tab: 'users', label: 'Users' },
-  { tab: 'documents', label: 'Documents' },
-  { tab: 'data', label: 'Data' },
-  { tab: 'model', label: 'Model' },
-  { tab: 'audit', label: 'Audit Log' },
-  { tab: 'settings', label: 'Settings' },
-]
-
-function AdminSidebar({ active, setTab }: { active: AdminTab; setTab: (t: AdminTab) => void }) {
-  return (
-    <aside className="w-52 flex-shrink-0 min-h-screen border-r pt-4"
-      style={{ backgroundColor: '#0C1A2E', borderColor: '#1B3058' }}>
-      <div className="px-4 mb-6">
-        <p className="font-mono-data text-xs uppercase tracking-widest mb-1" style={{ color: '#3E5A82' }}>Admin</p>
-        <p className="text-sm font-medium" style={{ color: '#E2E8F4' }}>Control Panel</p>
-      </div>
-      <nav className="space-y-0.5 px-2">
-        {adminSidebarItems.map(item => (
-          <button
-            key={item.tab}
-            onClick={() => setTab(item.tab)}
-            className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-all"
-            style={{
-              backgroundColor: active === item.tab ? 'rgba(239,68,68,0.1)' : 'transparent',
-              color: active === item.tab ? '#EF4444' : '#7A93B8',
-            }}
-            onMouseEnter={e => { if (active !== item.tab) (e.currentTarget as HTMLElement).style.color = '#E2E8F4' }}
-            onMouseLeave={e => { if (active !== item.tab) (e.currentTarget as HTMLElement).style.color = '#7A93B8' }}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
-    </aside>
-  )
+interface User {
+  id: number;
+  email: string;
+  username: string;
+  created_at: string;
+  last_login: string;
+  status: "active" | "inactive" | "suspended";
+  predictions: number;
 }
 
-function AdminDashboardTab() {
-  const statBoxes = [
-    { label: 'Pending Approvals', value: '7', sub: '3 users, 4 documents', color: '#F59E0B' },
-    { label: 'Last Retrain Date', value: 'Jul 28, 2026', sub: 'Model v2.4.1', color: '#3B82F6' },
-    { label: 'Current Model Version', value: 'v2.4.1', sub: 'AUC-ROC 0.974', color: '#14B8A6' },
-    { label: 'Platform Health', value: '99.8%', sub: 'Uptime last 30 days', color: '#22C55E' },
-  ]
-  const activity = [
-    { time: '08:42 IST', user: 'priya@rbi.org.in', action: 'Document uploaded', detail: 'Yield Curve Analysis 2026' },
-    { time: '07:15 IST', user: 'system', action: 'Monthly model run', detail: 'August 2026 probability computed' },
-    { time: '06:30 IST', user: 'admin@irrm.in', action: 'User approved', detail: 'rahul.sharma@iimb.ac.in' },
-    { time: 'Yesterday', user: 'system', action: 'Alert triggered', detail: 'P(Recession) crossed 30% threshold' },
-    { time: 'Yesterday', user: 'vijay@niti.gov.in', action: 'Scenario saved', detail: 'Stress scenario: Oil shock 2026' },
-    { time: '2 days ago', user: 'admin@irrm.in', action: 'Data approved', detail: 'monthly_india_2010_2026.csv' },
-  ]
-
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>Admin Dashboard</h2>
-      <div className="grid grid-cols-4 gap-4 mb-8">
-        {statBoxes.map(s => (
-          <div key={s.label} className="p-5 rounded-xl border" style={{ backgroundColor: '#0F2040', borderColor: '#1B3058' }}>
-            <p className="text-xs mb-2" style={{ color: '#7A93B8' }}>{s.label}</p>
-            <p className="font-mono-data text-xl font-semibold mb-1" style={{ color: s.color }}>{s.value}</p>
-            <p className="text-xs" style={{ color: '#3E5A82' }}>{s.sub}</p>
-          </div>
-        ))}
-      </div>
-      <h3 className="font-semibold text-sm mb-3" style={{ color: '#E2E8F4' }}>Recent Activity</h3>
-      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#1B3058' }}>
-        {activity.map((a, i) => (
-          <div key={i} className="grid items-center px-5 py-3 border-b text-xs"
-            style={{ gridTemplateColumns: '100px 180px 180px 1fr', backgroundColor: i % 2 === 0 ? '#0C1A2E' : '#07101F', borderColor: '#1B3058' }}>
-            <span className="font-mono-data" style={{ color: '#3E5A82' }}>{a.time}</span>
-            <span style={{ color: '#7A93B8' }}>{a.user}</span>
-            <span style={{ color: '#E2E8F4' }}>{a.action}</span>
-            <span style={{ color: '#7A93B8' }}>{a.detail}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+interface SystemStats {
+  total_users: number;
+  active_users: number;
+  total_predictions: number;
+  avg_probability: number;
+  system_uptime: number;
+  api_calls_today: number;
+  model_accuracy: number;
 }
 
-function Users() {
-  const users = [
-    { name: 'Dr. Priya Raghavan', email: 'priya@rbi.org.in', institution: 'Reserve Bank of India', status: 'Approved' },
-    { name: 'Rahul Sharma', email: 'rahul.sharma@iimb.ac.in', institution: 'IIM Bangalore', status: 'Pending' },
-    { name: 'Dr. Ananya Krishnan', email: 'ananya@igidr.ac.in', institution: 'IGIDR Mumbai', status: 'Approved' },
-    { name: 'Vijay Nair', email: 'vijay@niti.gov.in', institution: 'NITI Aayog', status: 'Approved' },
-    { name: 'Sunita Mehta', email: 'sunita@imf.org', institution: 'IMF (India Desk)', status: 'Pending' },
-    { name: 'Dr. Arjun Patel', email: 'arjun@worldbank.org', institution: 'World Bank', status: 'Pending' },
-  ]
-
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>Users</h2>
-      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#1B3058' }}>
-        <div className="grid text-xs font-semibold uppercase tracking-widest px-5 py-3 border-b"
-          style={{ gridTemplateColumns: '1fr 1fr 1fr 100px 160px', backgroundColor: '#0F2040', borderColor: '#1B3058', color: '#3E5A82' }}>
-          <span>Name</span><span>Email</span><span>Institution</span><span>Status</span><span>Actions</span>
-        </div>
-        {users.map((u, i) => (
-          <div key={i} className="grid items-center px-5 py-3.5 border-b text-xs"
-            style={{ gridTemplateColumns: '1fr 1fr 1fr 100px 160px', backgroundColor: i % 2 === 0 ? '#0C1A2E' : '#07101F', borderColor: '#1B3058' }}>
-            <span className="font-medium" style={{ color: '#E2E8F4' }}>{u.name}</span>
-            <span style={{ color: '#7A93B8' }}>{u.email}</span>
-            <span style={{ color: '#7A93B8' }}>{u.institution}</span>
-            <span className="px-2 py-0.5 rounded text-xs font-semibold inline-block"
-              style={{
-                backgroundColor: u.status === 'Approved' ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)',
-                color: u.status === 'Approved' ? '#22C55E' : '#F59E0B',
-              }}>
-              {u.status}
-            </span>
-            <div className="flex gap-2">
-              {u.status === 'Pending' && (
-                <>
-                  <button className="px-2 py-1 rounded text-xs font-semibold transition-all"
-                    style={{ backgroundColor: 'rgba(34,197,94,0.12)', color: '#22C55E' }}>
-                    Approve
-                  </button>
-                  <button className="px-2 py-1 rounded text-xs font-semibold transition-all"
-                    style={{ backgroundColor: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>
-                    Reject
-                  </button>
-                </>
-              )}
-              {u.status === 'Approved' && (
-                <button className="px-2 py-1 rounded text-xs font-semibold"
-                  style={{ backgroundColor: '#162B52', color: '#7A93B8' }}>
-                  Suspend
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function AdminDocuments() {
-  const docs = [
-    { title: 'Yield Curve Analysis 2026', uploader: 'priya@rbi.org.in', peerStatus: 'Under Review', action: 'Approve' },
-    { title: 'India PMI Decomposition Study', uploader: 'rahul.sharma@iimb.ac.in', peerStatus: 'Peer Approved', action: 'Approve' },
-    { title: 'Credit Cycles and NPA Dynamics', uploader: 'ananya@igidr.ac.in', peerStatus: 'Peer Approved', action: 'Published' },
-    { title: 'Monsoon Shocks and GDP', uploader: 'vijay@niti.gov.in', peerStatus: 'Pending Review', action: 'Approve' },
-    { title: 'Global Commodity Pass-through', uploader: 'sunita@imf.org', peerStatus: 'Under Review', action: 'Approve' },
-  ]
-
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>Documents</h2>
-      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#1B3058' }}>
-        <div className="grid text-xs font-semibold uppercase tracking-widest px-5 py-3 border-b"
-          style={{ gridTemplateColumns: '1fr 1fr 1fr 120px', backgroundColor: '#0F2040', borderColor: '#1B3058', color: '#3E5A82' }}>
-          <span>Title</span><span>Uploader</span><span>Peer Review</span><span>Action</span>
-        </div>
-        {docs.map((d, i) => (
-          <div key={i} className="grid items-center px-5 py-3.5 border-b text-xs"
-            style={{ gridTemplateColumns: '1fr 1fr 1fr 120px', backgroundColor: i % 2 === 0 ? '#0C1A2E' : '#07101F', borderColor: '#1B3058' }}>
-            <span className="font-medium pr-4 truncate" style={{ color: '#E2E8F4' }}>{d.title}</span>
-            <span style={{ color: '#7A93B8' }}>{d.uploader}</span>
-            <span style={{ color: d.peerStatus === 'Peer Approved' ? '#22C55E' : '#7A93B8' }}>{d.peerStatus}</span>
-            {d.action === 'Published' ? (
-              <span className="text-xs" style={{ color: '#3E5A82' }}>Published</span>
-            ) : (
-              <button className="px-3 py-1 rounded text-xs font-semibold transition-all"
-                style={{ backgroundColor: 'rgba(59,130,246,0.12)', color: '#3B82F6' }}>
-                Approve
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function DataTab() {
-  const rows = [
-    { file: 'monthly_india_1991_2000.csv', range: 'Jan 1991 – Dec 2000', uploader: 'admin@irrm.in', strategy: 'Linear Interpolation', status: 'Approved' },
-    { file: 'monthly_india_2001_2010.csv', range: 'Jan 2001 – Dec 2010', uploader: 'admin@irrm.in', strategy: 'Forward Fill', status: 'Approved' },
-    { file: 'monthly_india_2011_2020.csv', range: 'Jan 2011 – Dec 2020', uploader: 'ananya@igidr.ac.in', strategy: 'None', status: 'Approved' },
-    { file: 'high_freq_q2_2026.csv', range: 'Apr 2026 – Jun 2026', uploader: 'priya@rbi.org.in', strategy: 'Seasonal Adj.', status: 'Pending' },
-  ]
-
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>Data</h2>
-      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#1B3058' }}>
-        <div className="grid text-xs font-semibold uppercase tracking-widest px-5 py-3 border-b"
-          style={{ gridTemplateColumns: '1fr 160px 140px 160px 90px', backgroundColor: '#0F2040', borderColor: '#1B3058', color: '#3E5A82' }}>
-          <span>Filename</span><span>Date Range</span><span>Uploader</span><span>Gap Strategy</span><span>Status</span>
-        </div>
-        {rows.map((r, i) => (
-          <div key={i} className="grid items-center px-5 py-3.5 border-b text-xs"
-            style={{ gridTemplateColumns: '1fr 160px 140px 160px 90px', backgroundColor: i % 2 === 0 ? '#0C1A2E' : '#07101F', borderColor: '#1B3058' }}>
-            <span className="font-mono-data" style={{ color: '#E2E8F4' }}>{r.file}</span>
-            <span className="font-mono-data" style={{ color: '#7A93B8' }}>{r.range}</span>
-            <span style={{ color: '#7A93B8' }}>{r.uploader}</span>
-            <span style={{ color: '#7A93B8' }}>{r.strategy}</span>
-            <span className="px-2 py-0.5 rounded text-xs font-semibold inline-block"
-              style={{
-                backgroundColor: r.status === 'Approved' ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)',
-                color: r.status === 'Approved' ? '#22C55E' : '#F59E0B',
-              }}>
-              {r.status}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function ModelTab() {
-  const versions = [
-    { version: 'v2.4.1', date: 'Jul 28, 2026', months: 302, aucRoc: 0.974, active: true },
-    { version: 'v2.3.0', date: 'Mar 12, 2026', months: 296, aucRoc: 0.971, active: false },
-    { version: 'v2.2.2', date: 'Nov 05, 2025', months: 290, aucRoc: 0.968, active: false },
-    { version: 'v2.1.0', date: 'Jun 20, 2025', months: 284, aucRoc: 0.962, active: false },
-  ]
-
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>Model</h2>
-      <div className="p-5 rounded-xl border mb-6" style={{ backgroundColor: '#0F2040', borderColor: '#1B3058' }}>
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-xs mb-1" style={{ color: '#7A93B8' }}>Active Model</p>
-            <p className="font-display text-xl font-semibold mb-3" style={{ color: '#E2E8F4' }}>
-              IRRM Ensemble v2.4.1
-            </p>
-            <div className="flex items-center gap-6 text-xs">
-              <div>
-                <span style={{ color: '#7A93B8' }}>Training months: </span>
-                <span className="font-mono-data" style={{ color: '#3B82F6' }}>302</span>
-              </div>
-              <div>
-                <span style={{ color: '#7A93B8' }}>AUC-ROC: </span>
-                <span className="font-mono-data" style={{ color: '#22C55E' }}>0.974</span>
-              </div>
-              <div>
-                <span style={{ color: '#7A93B8' }}>Precision: </span>
-                <span className="font-mono-data" style={{ color: '#14B8A6' }}>0.91</span>
-              </div>
-              <div>
-                <span style={{ color: '#7A93B8' }}>Recall: </span>
-                <span className="font-mono-data" style={{ color: '#A78BFA' }}>0.88</span>
-              </div>
-            </div>
-          </div>
-          <button className="px-4 py-2 rounded-lg text-xs font-semibold border transition-all"
-            style={{ borderColor: '#F59E0B', color: '#F59E0B', backgroundColor: 'transparent' }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,158,11,0.08)'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}>
-            Rollback
-          </button>
-        </div>
-      </div>
-      <h3 className="font-semibold text-sm mb-3" style={{ color: '#E2E8F4' }}>Version History</h3>
-      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#1B3058' }}>
-        <div className="grid text-xs font-semibold uppercase tracking-widest px-5 py-3 border-b"
-          style={{ gridTemplateColumns: '100px 120px 130px 90px 80px', backgroundColor: '#0F2040', borderColor: '#1B3058', color: '#3E5A82' }}>
-          <span>Version</span><span>Date</span><span>Months</span><span>AUC-ROC</span><span>Status</span>
-        </div>
-        {versions.map((v, i) => (
-          <div key={v.version} className="grid items-center px-5 py-3.5 border-b text-xs"
-            style={{ gridTemplateColumns: '100px 120px 130px 90px 80px', backgroundColor: i % 2 === 0 ? '#0C1A2E' : '#07101F', borderColor: '#1B3058' }}>
-            <span className="font-mono-data font-semibold" style={{ color: v.active ? '#3B82F6' : '#E2E8F4' }}>{v.version}</span>
-            <span className="font-mono-data" style={{ color: '#7A93B8' }}>{v.date}</span>
-            <span className="font-mono-data" style={{ color: '#7A93B8' }}>{v.months}</span>
-            <span className="font-mono-data" style={{ color: '#22C55E' }}>{v.aucRoc}</span>
-            <span className="px-2 py-0.5 rounded text-xs font-semibold inline-block"
-              style={{ backgroundColor: v.active ? 'rgba(59,130,246,0.12)' : '#162B52', color: v.active ? '#3B82F6' : '#3E5A82' }}>
-              {v.active ? 'Active' : 'Archived'}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function AuditLog() {
-  const rows = [
-    { ts: '2026-08-05 08:42:11', user: 'priya@rbi.org.in', action: 'DOCUMENT_UPLOAD', detail: 'doc_id: 1182, title: Yield Curve Analysis 2026' },
-    { ts: '2026-08-05 07:15:00', user: 'system', action: 'MODEL_RUN', detail: 'month: 2026-08, result: P=0.32, status: WATCH' },
-    { ts: '2026-08-05 06:30:45', user: 'admin@irrm.in', action: 'USER_APPROVE', detail: 'user_id: 441, email: rahul.sharma@iimb.ac.in' },
-    { ts: '2026-08-04 23:00:01', user: 'system', action: 'ALERT_TRIGGER', detail: 'threshold: 30%, current: 32%, emails: 14 sent' },
-    { ts: '2026-08-04 16:22:30', user: 'vijay@niti.gov.in', action: 'SCENARIO_SAVE', detail: 'scenario_id: 88, name: Oil Shock 2026' },
-    { ts: '2026-08-04 09:11:05', user: 'admin@irrm.in', action: 'DATA_APPROVE', detail: 'file: high_freq_q2_2026.csv, rows: 91' },
-    { ts: '2026-08-03 14:05:19', user: 'ananya@igidr.ac.in', action: 'API_KEYGEN', detail: 'key rotated, old_key_hash: a3f9d...' },
-    { ts: '2026-08-03 11:44:02', user: 'admin@irrm.in', action: 'SETTINGS_UPDATE', detail: 'rate_limit changed: 500→1000' },
-  ]
-
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>Audit Log</h2>
-      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#1B3058' }}>
-        <div className="grid text-xs font-semibold uppercase tracking-widest px-5 py-3 border-b"
-          style={{ gridTemplateColumns: '170px 160px 160px 1fr', backgroundColor: '#0F2040', borderColor: '#1B3058', color: '#3E5A82' }}>
-          <span>Timestamp</span><span>User</span><span>Action</span><span>Details</span>
-        </div>
-        {rows.map((r, i) => (
-          <div key={i} className="grid items-center px-5 py-3 border-b text-xs"
-            style={{ gridTemplateColumns: '170px 160px 160px 1fr', backgroundColor: i % 2 === 0 ? '#0C1A2E' : '#07101F', borderColor: '#1B3058' }}>
-            <span className="font-mono-data" style={{ color: '#3E5A82' }}>{r.ts}</span>
-            <span style={{ color: '#7A93B8' }}>{r.user}</span>
-            <span className="font-mono-data font-semibold text-xs" style={{ color: '#3B82F6' }}>{r.action}</span>
-            <span className="font-mono-data text-xs" style={{ color: '#7A93B8' }}>{r.detail}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function Settings() {
-  const [settings, setSettings] = useState({
-    alertSender: 'alerts@irrm.in',
-    rateLimit: '1000',
-    apiEnabled: true,
-    publicDocs: true,
-    autoRetrain: false,
-    maintenanceMode: false,
-  })
-
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>Settings</h2>
-      <div className="space-y-4 max-w-lg">
-        {[
-          { label: 'Alert Email Sender', key: 'alertSender', type: 'text' },
-          { label: 'API Rate Limit (calls/day)', key: 'rateLimit', type: 'number' },
-        ].map(f => (
-          <div key={f.key}>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#7A93B8' }}>{f.label}</label>
-            <input
-              type={f.type}
-              value={settings[f.key as keyof typeof settings] as string}
-              onChange={e => setSettings(prev => ({ ...prev, [f.key]: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border text-sm font-mono-data outline-none"
-              style={{ backgroundColor: '#07101F', borderColor: '#1B3058', color: '#E2E8F4' }}
-            />
-          </div>
-        ))}
-        <div className="pt-4 space-y-3">
-          {[
-            { label: 'Enable API access', key: 'apiEnabled' },
-            { label: 'Public document access', key: 'publicDocs' },
-            { label: 'Auto-retrain on new data', key: 'autoRetrain' },
-            { label: 'Maintenance mode', key: 'maintenanceMode' },
-          ].map(toggle => (
-            <div key={toggle.key} className="flex items-center justify-between py-3 border-t" style={{ borderColor: '#1B3058' }}>
-              <span className="text-sm" style={{ color: '#E2E8F4' }}>{toggle.label}</span>
-              <button
-                onClick={() => setSettings(prev => ({ ...prev, [toggle.key]: !prev[toggle.key as keyof typeof prev] }))}
-                className="relative w-10 h-5 rounded-full transition-colors"
-                style={{ backgroundColor: settings[toggle.key as keyof typeof settings] ? '#3B82F6' : '#162B52' }}
-              >
-                <span
-                  className="absolute top-0.5 w-4 h-4 rounded-full transition-transform"
-                  style={{
-                    backgroundColor: '#fff',
-                    left: settings[toggle.key as keyof typeof settings] ? 'calc(100% - 18px)' : '2px',
-                  }}
-                />
-              </button>
-            </div>
-          ))}
-        </div>
-        <button
-          className="mt-4 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all"
-          style={{ backgroundColor: '#3B82F6', color: '#fff' }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#2563EB'}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#3B82F6'}
-        >
-          Save Settings
-        </button>
-      </div>
-    </div>
-  )
+interface ActivityLog {
+  id: number;
+  user_id: number;
+  action: string;
+  timestamp: string;
+  details: string;
 }
 
 export default function Admin() {
-  const [tab, setTab] = useState<AdminTab>('dashboard')
+  // ============================================================================
+  // STATE MANAGEMENT
+  // ============================================================================
 
-  const content: Record<AdminTab, React.ReactElement> = {
-    dashboard: <AdminDashboardTab />,
-    users: <Users />,
-    documents: <AdminDocuments />,
-    data: <DataTab />,
-    model: <ModelTab />,
-    audit: <AuditLog />,
-    settings: <Settings />,
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "users" | "activity" | "settings" | "analytics"
+  >("overview");
+  const [users, setUsers] = useState<User[]>([]);
+  const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive" | "suspended">(
+    "all"
+  );
+  const [sortBy, setSortBy] = useState<"name" | "created" | "predictions">("created");
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [chartData, setChartData] = useState<any[]>([]);
+
+  const token = localStorage.getItem("token");
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
+
+  // ============================================================================
+  // EFFECTS
+  // ============================================================================
+
+  useEffect(() => {
+    if (!isAdmin) {
+      setError("Access denied. Admin privileges required.");
+      return;
+    }
+
+    fetchData();
+  }, []);
+
+  // ============================================================================
+  // API CALLS
+  // ============================================================================
+
+  // Fetch all admin data
+  const fetchData = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      // Fetch system stats
+      const statsRes = await fetch("http://localhost:5000/api/v1/admin/stats", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setSystemStats(statsData);
+      }
+
+      // Fetch users
+      const usersRes = await fetch("http://localhost:5000/api/v1/admin/users", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (usersRes.ok) {
+        const usersData = await usersRes.json();
+        setUsers(usersData.users || []);
+      }
+
+      // Fetch activity logs
+      const activityRes = await fetch("http://localhost:5000/api/v1/admin/activity", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (activityRes.ok) {
+        const activityData = await activityRes.json();
+        setActivityLogs(activityData.logs || []);
+      }
+
+      // Generate mock chart data
+      generateChartData();
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(
+        "Failed to fetch admin data. Make sure Flask backend is running on http://localhost:5000"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Generate chart data
+  const generateChartData = () => {
+    const data = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      data.push({
+        date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        users: Math.floor(Math.random() * 50) + 10,
+        predictions: Math.floor(Math.random() * 200) + 50,
+        apiCalls: Math.floor(Math.random() * 1000) + 200,
+      });
+    }
+    setChartData(data);
+  };
+
+  // Update user status
+  const updateUserStatus = async (userId: number, newStatus: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/v1/admin/users/${userId}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      if (response.ok) {
+        setSuccess(`✅ User status updated to ${newStatus}`);
+        fetchData();
+        setTimeout(() => setSuccess(""), 3000);
+      } else {
+        setError("Failed to update user status");
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      setError("Failed to update user status");
+    }
+  };
+
+  // Delete user
+  const deleteUser = async (userId: number) => {
+    if (!confirm("Are you sure you want to delete this user?")) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/v1/admin/users/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        setSuccess("✅ User deleted successfully");
+        fetchData();
+        setTimeout(() => setSuccess(""), 3000);
+      } else {
+        setError("Failed to delete user");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      setError("Failed to delete user");
+    }
+  };
+
+  // ============================================================================
+  // UTILITY FUNCTIONS
+  // ============================================================================
+
+  // Filter and sort users
+  const getFilteredUsers = (): User[] => {
+    let filtered = users;
+
+    // Filter by status
+    if (filterStatus !== "all") {
+      filtered = filtered.filter((u) => u.status === filterStatus);
+    }
+
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (u) =>
+          u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          u.email.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.username.localeCompare(b.username);
+        case "predictions":
+          return b.predictions - a.predictions;
+        case "created":
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+
+    return filtered;
+  };
+
+  // Get status color
+  const getStatusColor = (
+    status: string
+  ): {
+    color: string;
+    bgColor: string;
+    icon: string;
+  } => {
+    switch (status) {
+      case "active":
+        return { color: "text-green-400", bgColor: "bg-green-900/20", icon: "🟢" };
+      case "inactive":
+        return { color: "text-gray-400", bgColor: "bg-gray-900/20", icon: "⚫" };
+      case "suspended":
+        return { color: "text-red-400", bgColor: "bg-red-900/20", icon: "🔴" };
+      default:
+        return { color: "text-slate-400", bgColor: "bg-slate-900/20", icon: "❓" };
+    }
+  };
+
+  // ============================================================================
+  // RENDER
+  // ============================================================================
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="bg-red-900/20 border border-red-700 rounded-lg p-8 text-center max-w-md">
+          <p className="text-2xl mb-2">🚫</p>
+          <p className="text-white font-bold mb-2">Access Denied</p>
+          <p className="text-red-300 text-sm mb-4">
+            You don't have admin privileges to access this page
+          </p>
+          
+          <a
+            href="/"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition inline-block"
+          >
+            Back to Home
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="inline-block animate-spin text-4xl mb-4">⏳</div>
+          <p className="text-white text-xl">Loading admin dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen pt-14 flex" style={{ backgroundColor: '#07101F' }}>
-      <AdminSidebar active={tab} setTab={setTab} />
-      <main className="flex-1 p-8 overflow-y-auto">
-        {content[tab]}
-      </main>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Navbar */}
+      <nav className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold">⚙️</span>
+              </div>
+              <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
+            </div>
+            
+            <a
+              href="/"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+            >
+              ← Back to Home
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h2 className="text-4xl font-bold text-white mb-2">⚙️ System Administration</h2>
+          <p className="text-slate-400">Manage users, monitor activity, and track system performance</p>
+        </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-900/20 border border-red-700/30 rounded-lg">
+            <p className="text-red-300 text-sm flex items-start">
+              <span className="mr-2 mt-0.5 text-lg">❌</span>
+              <span>{error}</span>
+            </p>
+          </div>
+        )}
+
+        {/* Success Alert */}
+        {success && (
+          <div className="mb-6 p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
+            <p className="text-green-300 text-sm flex items-start">
+              <span className="mr-2 mt-0.5 text-lg">✅</span>
+              <span>{success}</span>
+            </p>
+          </div>
+        )}
+
+        {/* System Stats */}
+        {systemStats && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+              <p className="text-slate-400 text-xs font-semibold uppercase mb-2">👥 Total Users</p>
+              <p className="text-3xl font-bold text-blue-400">{systemStats.total_users}</p>
+              <p className="text-xs text-slate-500 mt-2">
+                {systemStats.active_users} active
+              </p>
+            </div>
+
+            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+              <p className="text-slate-400 text-xs font-semibold uppercase mb-2">
+                📊 Total Predictions
+              </p>
+              <p className="text-3xl font-bold text-green-400">
+                {systemStats.total_predictions}
+              </p>
+              <p className="text-xs text-slate-500 mt-2">
+                Avg: {(systemStats.avg_probability * 100).toFixed(1)}%
+              </p>
+            </div>
+
+            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+              <p className="text-slate-400 text-xs font-semibold uppercase mb-2">
+                🌐 API Calls (Today)
+              </p>
+              <p className="text-3xl font-bold text-orange-400">
+                {systemStats.api_calls_today}
+              </p>
+              <p className="text-xs text-slate-500 mt-2">Real-time</p>
+            </div>
+
+            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+              <p className="text-slate-400 text-xs font-semibold uppercase mb-2">
+                ⭐ Model Accuracy
+              </p>
+              <p className="text-3xl font-bold text-purple-400">
+                {(systemStats.model_accuracy * 100).toFixed(1)}%
+              </p>
+              <p className="text-xs text-slate-500 mt-2">Backtested</p>
+            </div>
+          </div>
+        )}
+
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-8 border-b border-slate-700 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab("overview")}
+            className={`px-6 py-3 font-medium transition border-b-2 whitespace-nowrap ${
+              activeTab === "overview"
+                ? "text-blue-400 border-b-blue-400"
+                : "text-slate-400 border-b-transparent hover:text-slate-300"
+            }`}
+          >
+            📈 Overview
+          </button>
+          <button
+            onClick={() => setActiveTab("users")}
+            className={`px-6 py-3 font-medium transition border-b-2 whitespace-nowrap ${
+              activeTab === "users"
+                ? "text-blue-400 border-b-blue-400"
+                : "text-slate-400 border-b-transparent hover:text-slate-300"
+            }`}
+          >
+            👥 Users ({users.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("activity")}
+            className={`px-6 py-3 font-medium transition border-b-2 whitespace-nowrap ${
+              activeTab === "activity"
+                ? "text-blue-400 border-b-blue-400"
+                : "text-slate-400 border-b-transparent hover:text-slate-300"
+            }`}
+          >
+            📋 Activity
+          </button>
+          <button
+            onClick={() => setActiveTab("analytics")}
+            className={`px-6 py-3 font-medium transition border-b-2 whitespace-nowrap ${
+              activeTab === "analytics"
+                ? "text-blue-400 border-b-blue-400"
+                : "text-slate-400 border-b-transparent hover:text-slate-300"
+            }`}
+          >
+            📊 Analytics
+          </button>
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={`px-6 py-3 font-medium transition border-b-2 whitespace-nowrap ${
+              activeTab === "settings"
+                ? "text-blue-400 border-b-blue-400"
+                : "text-slate-400 border-b-transparent hover:text-slate-300"
+            }`}
+          >
+            ⚙️ Settings
+          </button>
+        </div>
+
+        {/* OVERVIEW TAB */}
+        {activeTab === "overview" && (
+          <div className="space-y-6 mb-8">
+            {/* User Status Distribution */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h3 className="text-lg font-bold text-white mb-4">👥 User Status Distribution</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        {
+                          name: "Active",
+                          value: users.filter((u) => u.status === "active").length,
+                        },
+                        {
+                          name: "Inactive",
+                          value: users.filter((u) => u.status === "inactive").length,
+                        },
+                        {
+                          name: "Suspended",
+                          value: users.filter((u) => u.status === "suspended").length,
+                        },
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      <Cell fill="#10b981" />
+                      <Cell fill="#6b7280" />
+                      <Cell fill="#ef4444" />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Recent Signups */}
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h3 className="text-lg font-bold text-white mb-4">🆕 Recent Signups</h3>
+                <div className="space-y-3">
+                  {users.slice(0, 5).map((user) => (
+                    <div key={user.id} className="flex justify-between items-center">
+                      <div>
+                        <p className="text-white font-semibold">{user.username}</p>
+                        <p className="text-slate-400 text-sm">{user.email}</p>
+                      </div>
+                      <p className="text-slate-500 text-xs">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* System Health */}
+            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+              <h3 className="text-lg font-bold text-white mb-4">🏥 System Health</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-slate-400 text-sm mb-2">API Status</p>
+                  <div className="flex items-center space-x-2">
+                    <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <span className="text-green-400 font-semibold">Operational</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-slate-400 text-sm mb-2">Database</p>
+                  <div className="flex items-center space-x-2">
+                    <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <span className="text-green-400 font-semibold">Healthy</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-slate-400 text-sm mb-2">Memory Usage</p>
+                  <div className="flex items-center space-x-2">
+                    <span className="w-full bg-slate-700 rounded-full h-2">
+                      <div className="h-2 rounded-full bg-blue-500" style={{ width: "45%" }}></div>
+                    </span>
+                    <span className="text-blue-400 font-semibold text-sm">45%</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-slate-400 text-sm mb-2">CPU Usage</p>
+                  <div className="flex items-center space-x-2">
+                    <span className="w-full bg-slate-700 rounded-full h-2">
+                      <div className="h-2 rounded-full bg-green-500" style={{ width: "32%" }}></div>
+                    </span>
+                    <span className="text-green-400 font-semibold text-sm">32%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* USERS TAB */}
+        {activeTab === "users" && (
+          <div className="space-y-6 mb-8">
+            {/* User Controls */}
+            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <input
+                  type="text"
+                  placeholder="Search by name or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                />
+
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value as any)}
+                  className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="suspended">Suspended</option>
+                </select>
+
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                >
+                  <option value="created">Latest</option>
+                  <option value="name">Name</option>
+                  <option value="predictions">Most Predictions</option>
+                </select>
+
+                <button
+                  onClick={fetchData}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition"
+                >
+                  🔄 Refresh
+                </button>
+              </div>
+
+              {/* Users Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-700">
+                      <th className="text-left py-3 px-4 text-slate-400 font-semibold">Username</th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-semibold">Email</th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-semibold">Status</th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-semibold">
+                        Predictions
+                      </th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-semibold">
+                        Joined
+                      </th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-semibold">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getFilteredUsers().map((user) => (
+                      <tr key={user.id} className="border-b border-slate-700 hover:bg-slate-700/30">
+                        <td className="py-3 px-4 text-white font-semibold">{user.username}</td>
+                        <td className="py-3 px-4 text-slate-300">{user.email}</td>
+                        <td className="py-3 px-4">
+                          <div
+                            className={`inline-block px-3 py-1 rounded text-sm font-bold ${
+                              getStatusColor(user.status).bgColor
+                            } ${getStatusColor(user.status).color}`}
+                          >
+                            {getStatusColor(user.status).icon} {user.status}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-slate-300">{user.predictions}</td>
+                        <td className="py-3 px-4 text-slate-400 text-xs">
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setSelectedUser(user)}
+                              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-2 rounded transition"
+                            >
+                              View
+                            </button>
+                            <select
+                              value={user.status}
+                              onChange={(e) => updateUserStatus(user.id, e.target.value)}
+                              className="bg-slate-700 text-white text-xs py-1 px-2 rounded focus:outline-none"
+                            >
+                              <option value="active">Active</option>
+                              <option value="inactive">Inactive</option>
+                              <option value="suspended">Suspend</option>
+                            </select>
+                            <button
+                              onClick={() => deleteUser(user.id)}
+                              className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded transition"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {getFilteredUsers().length === 0 && (
+                <p className="text-center text-slate-400 py-8">No users found</p>
+              )}
+            </div>
+
+            {/* User Detail Modal */}
+            {selectedUser && (
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <div className="flex justify-between items-start mb-6">
+                  <h3 className="text-xl font-bold text-white">User Details</h3>
+                  <button
+                    onClick={() => setSelectedUser(null)}
+                    className="text-slate-400 hover:text-slate-300"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-slate-400 text-sm mb-1">Username</p>
+                    <p className="text-white font-semibold text-lg">{selectedUser.username}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm mb-1">Email</p>
+                    <p className="text-white font-semibold text-lg">{selectedUser.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm mb-1">Status</p>
+                    <p
+                      className={`font-semibold text-lg ${
+                        getStatusColor(selectedUser.status).color
+                      }`}
+                    >
+                      {getStatusColor(selectedUser.status).icon} {selectedUser.status}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm mb-1">Total Predictions</p>
+                    <p className="text-white font-semibold text-lg">
+                      {selectedUser.predictions}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm mb-1">Joined</p>
+                    <p className="text-white font-semibold">
+                      {new Date(selectedUser.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm mb-1">Last Login</p>
+                    <p className="text-white font-semibold">
+                      {new Date(selectedUser.last_login).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ACTIVITY TAB */}
+        {activeTab === "activity" && (
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-8">
+            <h3 className="text-lg font-bold text-white mb-6">📋 Activity Log</h3>
+
+            <div className="space-y-3">
+              {activityLogs.length > 0 ? (
+                activityLogs.slice(0, 20).map((log, idx) => (
+                  <div key={idx} className="flex items-start space-x-4 pb-3 border-b border-slate-700">
+                    <div className="pt-1">
+                      <span className="text-2xl">
+                        {log.action.includes("login")
+                          ? "📝"
+                          : log.action.includes("upload")
+                          ? "📤"
+                          : log.action.includes("delete")
+                          ? "🗑️"
+                          : "📌"}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white font-semibold capitalize">{log.action}</p>
+                      <p className="text-slate-400 text-sm">{log.details}</p>
+                      <p className="text-slate-500 text-xs mt-1">
+                        User #{log.user_id} · {new Date(log.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-slate-400 text-center py-8">No activity logs</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ANALYTICS TAB */}
+        {activeTab === "analytics" && (
+          <div className="space-y-6 mb-8">
+            {/* Activity Trend */}
+            {chartData.length > 0 && (
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h3 className="text-lg font-bold text-white mb-4">📈 7-Day Activity Trend</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorPredictions" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                    <XAxis dataKey="date" stroke="#94a3b8" />
+                    <YAxis stroke="#94a3b8" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#1e293b",
+                        border: "1px solid #475569",
+                      }}
+                    />
+                    <Legend />
+                    <Area
+                      type="monotone"
+                      dataKey="users"
+                      stroke="#3b82f6"
+                      fillOpacity={1}
+                      fill="url(#colorUsers)"
+                      name="New Users"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="predictions"
+                      stroke="#10b981"
+                      fillOpacity={1}
+                      fill="url(#colorPredictions)"
+                      name="Predictions"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* API Call Statistics */}
+            {chartData.length > 0 && (
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h3 className="text-lg font-bold text-white mb-4">🌐 API Calls by Day</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                    <XAxis dataKey="date" stroke="#94a3b8" />
+                    <YAxis stroke="#94a3b8" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#1e293b",
+                        border: "1px solid #475569",
+                      }}
+                    />
+                    <Bar dataKey="apiCalls" fill="#f59e0b" name="API Calls" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* Top Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <p className="text-slate-400 text-sm mb-2">Avg. Prediction Probability</p>
+                <p className="text-3xl font-bold text-blue-400">
+                  {systemStats ? (systemStats.avg_probability * 100).toFixed(1) : "0"}%
+                </p>
+              </div>
+
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <p className="text-slate-400 text-sm mb-2">User Retention Rate</p>
+                <p className="text-3xl font-bold text-green-400">87%</p>
+              </div>
+
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <p className="text-slate-400 text-sm mb-2">Daily Active Users</p>
+                <p className="text-3xl font-bold text-purple-400">
+                  {systemStats ? systemStats.active_users : "0"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SETTINGS TAB */}
+        {activeTab === "settings" && (
+          <div className="space-y-6 mb-8">
+            {/* System Settings */}
+            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+              <h3 className="text-lg font-bold text-white mb-6">⚙️ System Settings</h3>
+
+              <div className="space-y-6">
+                {/* Email Settings */}
+                <div>
+                  <label className="block text-white font-semibold mb-2">
+                    Admin Email Notifications
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="admin@example.com"
+                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                {/* Maintenance Mode */}
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-white font-semibold">Maintenance Mode</p>
+                    <p className="text-slate-400 text-sm">
+                      Prevent new users from accessing the system
+                    </p>
+                  </div>
+                  <input type="checkbox" className="w-5 h-5" />
+                </div>
+
+                {/* Rate Limiting */}
+                <div>
+                  <label className="block text-white font-semibold mb-2">
+                    API Rate Limit (requests/minute)
+                  </label>
+                  <input
+                    type="number"
+                    value="60"
+                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                {/* Max Upload Size */}
+                <div>
+                  <label className="block text-white font-semibold mb-2">
+                    Max Upload Size (MB)
+                  </label>
+                  <input
+                    type="number"
+                    value="10"
+                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                  💾 Save Settings
+                </button>
+              </div>
+            </div>
+
+            {/* Backup & Recovery */}
+            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+              <h3 className="text-lg font-bold text-white mb-6">💾 Backup & Recovery</h3>
+
+              <div className="space-y-4">
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition text-left flex justify-between items-center">
+                  <span>📦 Create Database Backup</span>
+                  <span className="text-sm text-blue-200">Last: 2 hours ago</span>
+                </button>
+
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition text-left flex justify-between items-center">
+                  <span>📥 Restore from Backup</span>
+                  <span className="text-sm text-blue-200">5 backups available</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="bg-slate-900 border-t border-slate-700 py-6 mt-12">
+        <div className="max-w-7xl mx-auto px-4 text-center text-slate-500 text-xs">
+          <p>Admin Dashboard | System Administration Panel</p>
+          <p className="mt-2">Version 1.0.0 | Last Updated: {new Date().toLocaleDateString()}</p>
+        </div>
+      </div>
     </div>
-  )
+  );
 }

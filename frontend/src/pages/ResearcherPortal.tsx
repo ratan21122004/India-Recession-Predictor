@@ -1,466 +1,1142 @@
-import React, { useState } from 'react'
+import { useState, useEffect } from "react";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
-type Tab = 'overview' | 'upload-doc' | 'upload-data' | 'scenario' | 'api' | 'alerts'
-
-const sidebarItems: { tab: Tab; label: string; icon: string }[] = [
-  { tab: 'overview', label: 'Overview', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-  { tab: 'upload-doc', label: 'Upload Document', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-  { tab: 'upload-data', label: 'Upload Data', icon: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4' },
-  { tab: 'scenario', label: 'Scenario Builder', icon: 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4' },
-  { tab: 'api', label: 'API Access', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' },
-  { tab: 'alerts', label: 'Alerts', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
-]
-
-const indicatorSliders = [
-  { name: 'Credit Growth (YoY %)', min: -10, max: 20, value: 4.2 },
-  { name: 'IIP Manufacturing', min: -40, max: 20, value: -1.8 },
-  { name: 'PMI Composite', min: 30, max: 65, value: 48.3 },
-  { name: 'Yield Curve (bps)', min: -150, max: 200, value: -31 },
-  { name: 'CPI Inflation (%)', min: 2, max: 12, value: 6.7 },
-  { name: 'WPI Inflation (%)', min: -3, max: 14, value: 3.1 },
-  { name: 'Forex Reserves ($Bn)', min: 200, max: 700, value: 412.8 },
-  { name: 'Current Account (% GDP)', min: -6, max: 2, value: -2.1 },
-  { name: 'Fiscal Deficit (% GDP)', min: -10, max: -2, value: -5.9 },
-  { name: 'Unemployment Rate (%)', min: 3, max: 25, value: 8.2 },
-  { name: 'Sensex YoY Change (%)', min: -60, max: 80, value: -12.4 },
-  { name: 'Bank NPA Ratio (%)', min: 1, max: 15, value: 7.1 },
-  { name: 'Export Growth (YoY %)', min: -40, max: 30, value: -6.8 },
-]
-
-const presetEpisodes = ['EP-1\n1991', 'EP-2\n1997', 'EP-3\n2000', 'EP-4\n2008', 'EP-5\n2012', 'EP-6\n2020']
-
-const csvPreview = [
-  { date: '2011-01', iip: 8.6, pmi: 57.9, credit: 18.2, cpi: 8.8 },
-  { date: '2011-02', iip: 6.2, pmi: 57.0, credit: 17.6, cpi: 9.0 },
-  { date: '2011-03', iip: 7.3, pmi: 57.6, credit: 21.5, cpi: 9.0 },
-  { date: '2011-04', iip: 5.6, pmi: 58.0, credit: 20.9, cpi: 8.7 },
-  { date: '2011-05', iip: 5.6, pmi: 57.5, credit: 20.7, cpi: 9.1 },
-]
-
-const existingAlerts = [
-  { id: 1, threshold: 50, email: 'priya@rbi.org.in' },
-  { id: 2, threshold: 70, email: 'priya.raghavan@gmail.com' },
-  { id: 3, threshold: 30, email: 'rbi-alerts@rbi.org.in' },
-]
-
-function Sidebar({ active, setTab }: { active: Tab; setTab: (t: Tab) => void }) {
-  return (
-    <aside className="w-56 flex-shrink-0 min-h-screen border-r pt-4"
-      style={{ backgroundColor: '#0C1A2E', borderColor: '#1B3058' }}>
-      <div className="px-4 mb-6">
-        <p className="font-mono-data text-xs uppercase tracking-widest" style={{ color: '#3E5A82' }}>
-          Researcher Portal
-        </p>
-        <p className="text-sm font-medium mt-1" style={{ color: '#E2E8F4' }}>Dr. Priya Raghavan</p>
-        <p className="text-xs" style={{ color: '#7A93B8' }}>RBI, Mumbai</p>
-      </div>
-      <nav className="space-y-0.5 px-2">
-        {sidebarItems.map(item => (
-          <button
-            key={item.tab}
-            onClick={() => setTab(item.tab)}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all text-left"
-            style={{
-              backgroundColor: active === item.tab ? 'rgba(59,130,246,0.12)' : 'transparent',
-              color: active === item.tab ? '#3B82F6' : '#7A93B8',
-            }}
-            onMouseEnter={e => { if (active !== item.tab) (e.currentTarget as HTMLElement).style.color = '#E2E8F4' }}
-            onMouseLeave={e => { if (active !== item.tab) (e.currentTarget as HTMLElement).style.color = '#7A93B8' }}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-4 h-4 flex-shrink-0">
-              <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-            </svg>
-            {item.label}
-          </button>
-        ))}
-      </nav>
-    </aside>
-  )
+interface PredictionResult {
+  filename: string;
+  recession_probability: number;
+  status: "alert" | "watch" | "normal";
+  signals: string;
+  explanation: string;
+  num_rows: number;
+  created_at: string;
+  probability: number;
 }
 
-function Overview() {
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-1" style={{ color: '#E2E8F4' }}>
-        Welcome back, Dr. Raghavan
-      </h2>
-      <p className="text-sm mb-6" style={{ color: '#7A93B8' }}>
-        Your contributions help improve the recession prediction model.
-      </p>
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        {[
-          { label: 'Documents Uploaded', value: '12', color: '#3B82F6' },
-          { label: 'Data Months Contributed', value: '48', color: '#14B8A6' },
-          { label: 'Reviews Completed', value: '7', color: '#A78BFA' },
-        ].map(s => (
-          <div key={s.label} className="p-5 rounded-xl border" style={{ backgroundColor: '#0F2040', borderColor: '#1B3058' }}>
-            <p className="font-mono-data text-3xl font-semibold mb-1" style={{ color: s.color }}>{s.value}</p>
-            <p className="text-xs" style={{ color: '#7A93B8' }}>{s.label}</p>
-          </div>
-        ))}
-      </div>
-      <div className="p-5 rounded-xl border" style={{ backgroundColor: '#0F2040', borderColor: '#1B3058' }}>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#3E5A82' }}>
-          Impact Score
-        </p>
-        <div className="flex items-end gap-4">
-          <p className="font-display text-5xl font-semibold" style={{ color: '#3B82F6' }}>82</p>
-          <div className="mb-2">
-            <p className="text-xs mb-1" style={{ color: '#7A93B8' }}>Top 14% of contributors</p>
-            <div className="w-48 h-2 rounded-full" style={{ backgroundColor: '#162B52' }}>
-              <div className="h-2 rounded-full" style={{ width: '82%', backgroundColor: '#3B82F6' }} />
-            </div>
-          </div>
-        </div>
-        <p className="text-xs mt-3" style={{ color: '#7A93B8' }}>
-          Impact is calculated based on peer review scores, download count, and model improvement contributions.
-        </p>
-      </div>
-    </div>
-  )
+interface UserHistory {
+  predictions: PredictionResult[];
+  total_predictions: number;
+  avg_probability: number;
 }
 
-function UploadDocument() {
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>Upload Document</h2>
-      <div
-        className="border-2 border-dashed rounded-xl p-10 text-center mb-6 transition-colors cursor-pointer"
-        style={{ borderColor: '#1B3058' }}
-        onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = '#3B82F6'}
-        onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = '#1B3058'}
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-8 h-8 mx-auto mb-3" style={{ color: '#3E5A82' }}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-        </svg>
-        <p className="text-sm font-medium mb-1" style={{ color: '#E2E8F4' }}>Drop PDF or DOCX here</p>
-        <p className="text-xs" style={{ color: '#7A93B8' }}>or click to browse — max 25 MB</p>
-      </div>
-      <div className="space-y-4">
-        {[
-          { label: 'Document Title', placeholder: 'Yield Curve Dynamics in Emerging Markets' },
-          { label: 'Publication Date', placeholder: '2024-11-01', type: 'date' },
-        ].map(f => (
-          <div key={f.label}>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#7A93B8' }}>{f.label}</label>
-            <input
-              type={f.type ?? 'text'}
-              placeholder={f.placeholder}
-              className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
-              style={{ backgroundColor: '#07101F', borderColor: '#1B3058', color: '#E2E8F4' }}
-            />
-          </div>
-        ))}
-        <div>
-          <label className="block text-xs font-medium mb-1.5" style={{ color: '#7A93B8' }}>Document Type</label>
-          <select className="w-full px-3 py-2 rounded-lg border text-sm outline-none" style={{ backgroundColor: '#07101F', borderColor: '#1B3058', color: '#E2E8F4' }}>
-            {['Research Paper', 'Working Paper', 'Policy Brief', 'Forecast Report', 'Dataset Note'].map(t => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
-        </div>
-        <label className="flex items-center gap-3 cursor-pointer">
-          <div className="w-4 h-4 rounded border flex items-center justify-center" style={{ borderColor: '#1B3058', backgroundColor: '#0F2040' }}>
-          </div>
-          <span className="text-xs" style={{ color: '#7A93B8' }}>
-            Embargo until publication date (restrict public access)
-          </span>
-        </label>
-      </div>
-      <button
-        className="mt-6 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all"
-        style={{ backgroundColor: '#3B82F6', color: '#fff' }}
-        onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#2563EB'}
-        onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#3B82F6'}
-      >
-        Upload Document
-      </button>
-    </div>
-  )
-}
-
-function UploadData() {
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>Upload Data</h2>
-      <div
-        className="border-2 border-dashed rounded-xl p-10 text-center mb-6 cursor-pointer transition-colors"
-        style={{ borderColor: '#1B3058' }}
-        onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = '#3B82F6'}
-        onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = '#1B3058'}
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-8 h-8 mx-auto mb-3" style={{ color: '#3E5A82' }}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M12 3v8.25m0 0l-3-3m3 3l3-3" />
-        </svg>
-        <p className="text-sm font-medium mb-1" style={{ color: '#E2E8F4' }}>Drop CSV here</p>
-        <p className="text-xs" style={{ color: '#7A93B8' }}>Monthly indicators — date column required in YYYY-MM format</p>
-      </div>
-
-      <div className="flex items-start gap-3 px-4 py-3 rounded-lg mb-4" style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth={2} className="w-4 h-4 flex-shrink-0 mt-0.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-        </svg>
-        <p className="text-xs" style={{ color: '#F59E0B' }}>
-          Some values before 2011 may need confirmation — the system detected gaps in IIP and PMI columns prior to January 2011.
-        </p>
-      </div>
-
-      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#1B3058' }}>
-        <div className="grid text-xs font-semibold uppercase tracking-widest px-4 py-2.5 border-b"
-          style={{ gridTemplateColumns: '120px 1fr 1fr 1fr 1fr', backgroundColor: '#0F2040', borderColor: '#1B3058', color: '#3E5A82' }}>
-          <span>Date</span><span>IIP Mfg</span><span>PMI</span><span>Credit Gr.</span><span>CPI</span>
-        </div>
-        {csvPreview.map((row, i) => (
-          <div key={i} className="grid items-center px-4 py-2.5 border-b text-xs font-mono-data"
-            style={{ gridTemplateColumns: '120px 1fr 1fr 1fr 1fr', backgroundColor: i % 2 === 0 ? '#0C1A2E' : '#07101F', borderColor: '#1B3058', color: '#E2E8F4' }}>
-            <span style={{ color: '#7A93B8' }}>{row.date}</span>
-            <span>{row.iip}</span>
-            <span>{row.pmi}</span>
-            <span>{row.credit}</span>
-            <span>{row.cpi}</span>
-          </div>
-        ))}
-      </div>
-
-      <button
-        className="mt-6 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all"
-        style={{ backgroundColor: '#3B82F6', color: '#fff' }}
-        onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#2563EB'}
-        onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#3B82F6'}
-      >
-        Submit Data
-      </button>
-    </div>
-  )
-}
-
-function ScenarioBuilder() {
-  const [sliders, setSliders] = useState(indicatorSliders.map(s => s.value))
-  const predicted = Math.round(25 + sliders.reduce((acc, v, i) => {
-    const s = indicatorSliders[i]
-    const norm = (v - s.min) / (s.max - s.min)
-    return acc + (i % 3 === 0 ? (1 - norm) * 8 : norm * 3)
-  }, 0))
-
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>Scenario Builder</h2>
-      <div className="grid grid-cols-2 gap-x-8 gap-y-5 mb-6">
-        {indicatorSliders.map((ind, i) => (
-          <div key={ind.name}>
-            <div className="flex justify-between text-xs mb-1.5">
-              <span style={{ color: '#7A93B8' }}>{ind.name}</span>
-              <span className="font-mono-data font-semibold" style={{ color: '#3B82F6' }}>{sliders[i].toFixed(1)}</span>
-            </div>
-            <input
-              type="range"
-              min={ind.min}
-              max={ind.max}
-              step={0.1}
-              value={sliders[i]}
-              onChange={e => {
-                const next = [...sliders]
-                next[i] = parseFloat(e.target.value)
-                setSliders(next)
-              }}
-              className="w-full h-1 rounded-full appearance-none cursor-pointer"
-              style={{ accentColor: '#3B82F6', backgroundColor: '#162B52' }}
-            />
-          </div>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2 mb-6 flex-wrap">
-        <p className="text-xs mr-2" style={{ color: '#7A93B8' }}>Load preset:</p>
-        {presetEpisodes.map((ep, i) => (
-          <button
-            key={i}
-            className="px-3 py-1.5 rounded text-xs font-mono-data transition-all border"
-            style={{ backgroundColor: '#0F2040', borderColor: '#1B3058', color: '#7A93B8' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#3B82F6'; (e.currentTarget as HTMLElement).style.color = '#3B82F6' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#1B3058'; (e.currentTarget as HTMLElement).style.color = '#7A93B8' }}
-          >
-            {ep.replace('\n', ' ')}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-4 p-5 rounded-xl border" style={{ backgroundColor: '#0F2040', borderColor: '#1B3058' }}>
-        <div className="flex-1">
-          <p className="text-xs mb-1" style={{ color: '#7A93B8' }}>Predicted P(Recession)</p>
-          <p className="font-mono-data text-4xl font-semibold" style={{ color: predicted >= 60 ? '#EF4444' : predicted >= 30 ? '#F59E0B' : '#22C55E' }}>
-            {Math.min(97, Math.max(5, predicted))}%
-          </p>
-        </div>
-        <button
-          className="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all"
-          style={{ backgroundColor: '#3B82F6', color: '#fff' }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#2563EB'}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#3B82F6'}
-        >
-          Save Scenario
-        </button>
-      </div>
-    </div>
-  )
-}
-
-function ApiAccess() {
-  const [copied, setCopied] = useState(false)
-  const key = 'irrm_sk_live_9x2kPqR7mNvL3wYcJ8hTdFgA5bZoU1eX'
-  const handleCopy = () => {
-    navigator.clipboard.writeText(key).catch(() => {})
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>API Access</h2>
-      <div className="space-y-5">
-        <div>
-          <p className="text-xs font-medium mb-2" style={{ color: '#7A93B8' }}>Your API Key</p>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2.5 rounded-lg border font-mono-data text-xs overflow-hidden"
-              style={{ backgroundColor: '#07101F', borderColor: '#1B3058', color: '#7A93B8' }}>
-              {key}
-            </div>
-            <button
-              onClick={handleCopy}
-              className="px-3 py-2.5 rounded-lg text-xs font-semibold transition-all border"
-              style={{ backgroundColor: copied ? 'rgba(34,197,94,0.12)' : '#0F2040', borderColor: copied ? '#22C55E' : '#1B3058', color: copied ? '#22C55E' : '#7A93B8' }}
-            >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-        </div>
-        <button
-          className="px-4 py-2 rounded-lg text-xs font-semibold border transition-all"
-          style={{ borderColor: '#EF4444', color: '#EF4444', backgroundColor: 'transparent' }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(239,68,68,0.08)'}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
-        >
-          Regenerate Key
-        </button>
-        <div className="p-5 rounded-xl border" style={{ backgroundColor: '#0F2040', borderColor: '#1B3058' }}>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#3E5A82' }}>Usage Today</p>
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <div className="h-2 rounded-full mb-2" style={{ backgroundColor: '#162B52' }}>
-                <div className="h-2 rounded-full" style={{ width: '12%', backgroundColor: '#3B82F6' }} />
-              </div>
-              <p className="font-mono-data text-sm" style={{ color: '#E2E8F4' }}>
-                120 <span style={{ color: '#7A93B8' }}>/ 1,000 calls</span>
-              </p>
-            </div>
-            <p className="font-mono-data text-xs" style={{ color: '#7A93B8' }}>Resets at midnight IST</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function Alerts() {
-  const [threshold, setThreshold] = useState('')
-  const [email, setEmail] = useState('')
-  const [alerts, setAlerts] = useState(existingAlerts)
-
-  return (
-    <div>
-      <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: '#E2E8F4' }}>Alerts</h2>
-      <div className="p-5 rounded-xl border mb-6" style={{ backgroundColor: '#0F2040', borderColor: '#1B3058' }}>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#3E5A82' }}>
-          Add New Alert
-        </p>
-        <div className="flex items-end gap-3">
-          <div className="flex-1">
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#7A93B8' }}>
-              Threshold (%)
-            </label>
-            <input
-              type="number"
-              placeholder="60"
-              value={threshold}
-              onChange={e => setThreshold(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border text-sm font-mono-data outline-none"
-              style={{ backgroundColor: '#07101F', borderColor: '#1B3058', color: '#E2E8F4' }}
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#7A93B8' }}>
-              Email Address
-            </label>
-            <input
-              type="email"
-              placeholder="you@institution.edu"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
-              style={{ backgroundColor: '#07101F', borderColor: '#1B3058', color: '#E2E8F4' }}
-            />
-          </div>
-          <button
-            className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-            style={{ backgroundColor: '#3B82F6', color: '#fff' }}
-            onClick={() => {
-              if (threshold && email) {
-                setAlerts(prev => [...prev, { id: Date.now(), threshold: parseInt(threshold), email }])
-                setThreshold('')
-                setEmail('')
-              }
-            }}
-          >
-            Add Alert
-          </button>
-        </div>
-      </div>
-      <div className="space-y-2">
-        {alerts.map(alert => (
-          <div key={alert.id} className="flex items-center justify-between px-4 py-3 rounded-lg border"
-            style={{ backgroundColor: '#0C1A2E', borderColor: '#1B3058' }}>
-            <div className="flex items-center gap-4">
-              <span className="font-mono-data text-sm font-semibold" style={{ color: '#F59E0B' }}>
-                P ≥ {alert.threshold}%
-              </span>
-              <span className="text-xs" style={{ color: '#7A93B8' }}>{alert.email}</span>
-            </div>
-            <button
-              onClick={() => setAlerts(prev => prev.filter(a => a.id !== alert.id))}
-              className="p-1.5 rounded transition-colors"
-              style={{ color: '#3E5A82' }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#EF4444'}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = '#3E5A82'}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+interface AlertConfig {
+  threshold: number;
+  email: string;
+  created_at: string;
 }
 
 export default function ResearcherPortal() {
-  const [tab, setTab] = useState<Tab>('overview')
+  // ============================================================================
+  // STATE MANAGEMENT
+  // ============================================================================
 
-  const content: Record<Tab, React.ReactElement> = {
-    overview: <Overview />,
-    'upload-doc': <UploadDocument />,
-    'upload-data': <UploadData />,
-    scenario: <ScenarioBuilder />,
-    api: <ApiAccess />,
-    alerts: <Alerts />,
-  }
+  const [activeTab, setActiveTab] = useState<
+    "upload" | "results" | "history" | "settings" | "api"
+  >("upload");
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [uploadLoading, setUploadLoading] = useState<boolean>(false);
+  const [uploadResult, setUploadResult] = useState<PredictionResult | null>(null);
+  const [uploadError, setUploadError] = useState<string>("");
+  const [uploadSuccess, setUploadSuccess] = useState<string>("");
+  const [history, setHistory] = useState<PredictionResult[]>([]);
+  const [historyLoading, setHistoryLoading] = useState<boolean>(false);
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<number | null>(null);
+  const [alerts, setAlerts] = useState<AlertConfig[]>([]);
+  const [alertThreshold, setAlertThreshold] = useState<number>(60);
+  const [alertEmail, setAlertEmail] = useState<string>("");
+  const [filePreview, setFilePreview] = useState<{
+    columns: string[];
+    rows: number;
+  } | null>(null);
+  const [dragActive, setDragActive] = useState<boolean>(false);
+  const [stats, setStats] = useState<{
+    totalUploads: number;
+    avgProbability: number;
+    highRiskCount: number;
+  }>({
+    totalUploads: 0,
+    avgProbability: 0,
+    highRiskCount: 0,
+  });
+
+  const token = localStorage.getItem("token");
+  const email = localStorage.getItem("email") || "researcher@example.com";
+  const username = localStorage.getItem("username") || "Researcher";
+
+  // ============================================================================
+  // EFFECTS
+  // ============================================================================
+
+  // Fetch user history on mount
+  useEffect(() => {
+    if (token) {
+      fetchHistory();
+      fetchAlerts();
+    }
+  }, [token]);
+
+  // Calculate stats when history changes
+  useEffect(() => {
+    if (history.length > 0) {
+      const avgProb =
+        history.reduce((sum, p) => sum + p.recession_probability, 0) /
+        history.length;
+      const highRisk = history.filter(
+        (p) => p.recession_probability >= 0.6
+      ).length;
+
+      setStats({
+        totalUploads: history.length,
+        avgProbability: avgProb,
+        highRiskCount: highRisk,
+      });
+    }
+  }, [history]);
+
+  // ============================================================================
+  // API CALLS
+  // ============================================================================
+
+  // Fetch prediction history
+  const fetchHistory = async () => {
+    setHistoryLoading(true);
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/v1/recession/history",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data: UserHistory = await response.json();
+
+      if (response.ok) {
+        setHistory(data.predictions || []);
+      } else {
+        console.error("Failed to fetch history");
+      }
+    } catch (err) {
+      console.error("History fetch error:", err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  // Fetch alert configuration
+  const fetchAlerts = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/v1/recession/alerts",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setAlerts(data.alerts || []);
+        if (data.alerts && data.alerts.length > 0) {
+          setAlertThreshold(data.alerts[0].threshold);
+          setAlertEmail(data.alerts[0].email);
+        }
+      }
+    } catch (err) {
+      console.error("Alert fetch error:", err);
+    }
+  };
+
+  // Upload CSV and run prediction
+  const handleUploadCSV = async () => {
+    if (!csvFile) {
+      setUploadError("Please select a CSV file");
+      return;
+    }
+
+    if (!token) {
+      setUploadError("Please login first");
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (csvFile.size > 10 * 1024 * 1024) {
+      setUploadError("File size must be less than 10MB");
+      return;
+    }
+
+    // Validate file type
+    if (!csvFile.name.endsWith(".csv")) {
+      setUploadError("Please upload a CSV file");
+      return;
+    }
+
+    setUploadLoading(true);
+    setUploadError("");
+    setUploadSuccess("");
+    setUploadResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", csvFile);
+
+      const response = await fetch(
+        "http://localhost:5000/api/v1/recession/predict",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      const data: PredictionResult = await response.json();
+
+      if (response.ok) {
+        setUploadResult(data);
+        setUploadSuccess(
+          `✅ Prediction complete! Analyzed ${data.num_rows} rows.`
+        );
+        setCsvFile(null);
+        setFilePreview(null);
+
+        // Refresh history
+        setTimeout(() => fetchHistory(), 1000);
+
+        // Switch to results tab
+        setActiveTab("results");
+      } else {
+        setUploadError(
+          data.explanation || "Upload failed. Please try again."
+        );
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      setUploadError(
+        "Failed to upload CSV. Make sure Flask backend is running on http://localhost:5000"
+      );
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+  // Save alert configuration
+  const handleSaveAlert = async () => {
+    if (!alertEmail) {
+      setUploadError("Please enter an email address");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/v1/recession/alerts",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            threshold: alertThreshold,
+            email: alertEmail,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        setUploadSuccess("✅ Alert configuration saved!");
+        fetchAlerts();
+        setTimeout(() => setUploadSuccess(""), 3000);
+      } else {
+        setUploadError("Failed to save alert configuration");
+      }
+    } catch (err) {
+      console.error("Alert save error:", err);
+      setUploadError("Failed to save alert configuration");
+    }
+  };
+
+  // ============================================================================
+  // UTILITY FUNCTIONS
+  // ============================================================================
+
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const file = e.target.files[0];
+      setCsvFile(file);
+      setUploadError("");
+      setUploadResult(null);
+
+      // Try to preview file (read first line)
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const text = event.target?.result as string;
+          const lines = text.split("\n");
+          const headers = lines[0].split(",");
+          setFilePreview({
+            columns: headers,
+            rows: lines.length - 1,
+          });
+        };
+        reader.readAsText(file);
+      }
+    }
+  };
+
+  // Handle drag and drop
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      setCsvFile(file);
+      setUploadError("");
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        const lines = text.split("\n");
+        const headers = lines[0].split(",");
+        setFilePreview({
+          columns: headers,
+          rows: lines.length - 1,
+        });
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  // Get status color
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case "alert":
+        return "#ef4444";
+      case "watch":
+        return "#eab308";
+      default:
+        return "#10b981";
+    }
+  };
+
+  // Get status display
+  const getStatusDisplay = (
+    status: string
+  ): {
+    color: string;
+    bgColor: string;
+    icon: string;
+    label: string;
+  } => {
+    switch (status) {
+      case "alert":
+        return {
+          color: "text-red-400",
+          bgColor: "bg-red-900/20",
+          icon: "🔴",
+          label: "ALERT",
+        };
+      case "watch":
+        return {
+          color: "text-yellow-400",
+          bgColor: "bg-yellow-900/20",
+          icon: "🟡",
+          label: "WATCH",
+        };
+      default:
+        return {
+          color: "text-green-400",
+          bgColor: "bg-green-900/20",
+          icon: "🟢",
+          label: "NORMAL",
+        };
+    }
+  };
+
+  // ============================================================================
+  // RENDER
+  // ============================================================================
 
   return (
-    <div className="min-h-screen pt-14 flex" style={{ backgroundColor: '#07101F' }}>
-      <Sidebar active={tab} setTab={setTab} />
-      <main className="flex-1 p-8 overflow-y-auto">
-        {content[tab]}
-      </main>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Navbar */}
+      <nav className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold">👨‍🔬</span>
+              </div>
+              <h1 className="text-2xl font-bold text-white">Researcher Portal</h1>
+            </div>
+            
+            <a
+              href="/"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+            >
+              ← Back to Home
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h2 className="text-4xl font-bold text-white mb-2">👨‍🔬 Researcher Portal</h2>
+          <p className="text-slate-400 mb-4">
+            Upload CSV data and run custom recession probability predictions
+          </p>
+          <div className="flex items-center space-x-2 text-sm text-slate-400">
+            <span>Logged in as:</span>
+            <span className="text-blue-400 font-semibold">{username}</span>
+            <span>|</span>
+            <span>{email}</span>
+          </div>
+        </div>
+
+        {/* Error Alert */}
+        {uploadError && (
+          <div className="mb-6 p-4 bg-red-900/20 border border-red-700/30 rounded-lg">
+            <p className="text-red-300 text-sm flex items-start">
+              <span className="mr-2 mt-0.5 text-lg">❌</span>
+              <span>{uploadError}</span>
+            </p>
+          </div>
+        )}
+
+        {/* Success Alert */}
+        {uploadSuccess && (
+          <div className="mb-6 p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
+            <p className="text-green-300 text-sm flex items-start">
+              <span className="mr-2 mt-0.5 text-lg">✅</span>
+              <span>{uploadSuccess}</span>
+            </p>
+          </div>
+        )}
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+            <p className="text-slate-400 text-xs font-semibold uppercase mb-2">
+              📤 Total Uploads
+            </p>
+            <p className="text-3xl font-bold text-blue-400">{stats.totalUploads}</p>
+            <p className="text-xs text-slate-500 mt-2">CSV files analyzed</p>
+          </div>
+
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+            <p className="text-slate-400 text-xs font-semibold uppercase mb-2">
+              📊 Average Probability
+            </p>
+            <p className="text-3xl font-bold text-blue-400">
+              {(stats.avgProbability * 100).toFixed(1)}%
+            </p>
+            <p className="text-xs text-slate-500 mt-2">Across all uploads</p>
+          </div>
+
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+            <p className="text-slate-400 text-xs font-semibold uppercase mb-2">
+              🔴 High Risk Uploads
+            </p>
+            <p className="text-3xl font-bold text-red-400">{stats.highRiskCount}</p>
+            <p className="text-xs text-slate-500 mt-2">≥60% probability</p>
+          </div>
+
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+            <p className="text-slate-400 text-xs font-semibold uppercase mb-2">
+              ⚙️ Account Status
+            </p>
+            <p className="text-3xl font-bold text-green-400">Active</p>
+            <p className="text-xs text-slate-500 mt-2">Full access enabled</p>
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-8 border-b border-slate-700 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab("upload")}
+            className={`px-6 py-3 font-medium transition border-b-2 whitespace-nowrap ${
+              activeTab === "upload"
+                ? "text-blue-400 border-b-blue-400"
+                : "text-slate-400 border-b-transparent hover:text-slate-300"
+            }`}
+          >
+            📤 Upload Data
+          </button>
+          <button
+            onClick={() => setActiveTab("results")}
+            className={`px-6 py-3 font-medium transition border-b-2 whitespace-nowrap ${
+              activeTab === "results"
+                ? "text-blue-400 border-b-blue-400"
+                : "text-slate-400 border-b-transparent hover:text-slate-300"
+            }`}
+          >
+            📊 Latest Results
+          </button>
+          <button
+            onClick={() => setActiveTab("history")}
+            className={`px-6 py-3 font-medium transition border-b-2 whitespace-nowrap ${
+              activeTab === "history"
+                ? "text-blue-400 border-b-blue-400"
+                : "text-slate-400 border-b-transparent hover:text-slate-300"
+            }`}
+          >
+            📋 History
+          </button>
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={`px-6 py-3 font-medium transition border-b-2 whitespace-nowrap ${
+              activeTab === "settings"
+                ? "text-blue-400 border-b-blue-400"
+                : "text-slate-400 border-b-transparent hover:text-slate-300"
+            }`}
+          >
+            ⚙️ Settings
+          </button>
+          <button
+            onClick={() => setActiveTab("api")}
+            className={`px-6 py-3 font-medium transition border-b-2 whitespace-nowrap ${
+              activeTab === "api"
+                ? "text-blue-400 border-b-blue-400"
+                : "text-slate-400 border-b-transparent hover:text-slate-300"
+            }`}
+          >
+            📡 API Access
+          </button>
+        </div>
+
+        {/* UPLOAD TAB */}
+        {activeTab === "upload" && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            {/* Upload Area */}
+            <div className="lg:col-span-2">
+              <div className="bg-slate-800 rounded-lg p-8 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">📤 Upload CSV File</h3>
+
+                {/* Drag & Drop Area */}
+                <div
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed rounded-lg p-12 text-center transition ${
+                    dragActive
+                      ? "border-blue-500 bg-blue-500/10"
+                      : "border-slate-600 bg-slate-700/20"
+                  }`}
+                >
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="csv-input"
+                  />
+                  <label
+                    htmlFor="csv-input"
+                    className="cursor-pointer block"
+                  >
+                    <p className="text-4xl mb-3">📁</p>
+                    <p className="text-white font-bold mb-2">
+                      Click to select or drag and drop
+                    </p>
+                    <p className="text-slate-400 text-sm">CSV files only (max 10MB)</p>
+                    {csvFile && (
+                      <p className="text-green-400 mt-3 font-semibold">
+                        ✓ {csvFile.name}
+                      </p>
+                    )}
+                  </label>
+                </div>
+
+                {/* File Preview */}
+                {filePreview && (
+                  <div className="mt-6 bg-slate-700 rounded-lg p-4">
+                    <h4 className="text-white font-bold mb-3">📋 File Preview</h4>
+                    <div className="space-y-2 text-sm">
+                      <p className="text-slate-300">
+                        <span className="text-slate-400">Columns:</span>{" "}
+                        {filePreview.columns.length}
+                      </p>
+                      <p className="text-slate-300">
+                        <span className="text-slate-400">Rows:</span>{" "}
+                        {filePreview.rows}
+                      </p>
+                      <div className="mt-3">
+                        <p className="text-slate-400 text-xs mb-2">Column Names:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {filePreview.columns.map((col, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-blue-900/30 text-blue-300 text-xs px-2 py-1 rounded"
+                            >
+                              {col.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload Button */}
+                <button
+                  onClick={handleUploadCSV}
+                  disabled={uploadLoading || !csvFile}
+                  className="w-full mt-6 bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 text-white font-bold py-3 px-4 rounded-lg transition"
+                >
+                  {uploadLoading ? "⏳ Analyzing..." : "🚀 Run Prediction"}
+                </button>
+              </div>
+
+              {/* Requirements */}
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mt-6">
+                <h4 className="text-white font-bold mb-4">📋 CSV Requirements</h4>
+                <div className="space-y-3 text-sm text-slate-300">
+                  <p>
+                    ✓ Your CSV must include the following columns (case-insensitive):
+                  </p>
+                  <div className="bg-slate-700 rounded p-3 space-y-2 text-xs font-mono">
+                    <p>• credit_growth (number)</p>
+                    <p>• iip_manufacturing (number)</p>
+                    <p>• pmi_composite (number)</p>
+                    <p>• usdinr (number)</p>
+                    <p>• rupee_depreciation (number)</p>
+                  </div>
+                  <p className="text-slate-400 text-xs">
+                    Optional: date column in YYYY-MM format
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Info Panel */}
+            <div className="space-y-6">
+              {/* Quick Stats */}
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h4 className="text-white font-bold mb-4">📊 Quick Tips</h4>
+                <ul className="space-y-3 text-sm text-slate-300">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-400 mt-1">•</span>
+                    <span>Maximum file size is 10MB</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-400 mt-1">•</span>
+                    <span>Minimum 1 row of data</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-400 mt-1">•</span>
+                    <span>All required columns must be present</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-400 mt-1">•</span>
+                    <span>Historical data recommended for accuracy</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Example */}
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h4 className="text-white font-bold mb-4">📝 Example CSV</h4>
+                <div className="bg-slate-900 rounded p-3 text-xs font-mono text-slate-300 overflow-x-auto">
+                  <pre>{`date,credit_growth,iip_manufacturing,pmi_composite,usdinr,rupee_depreciation
+2026-01,4.2,-1.8,48.3,83.5,2.5
+2026-02,4.5,-1.2,49.1,83.2,2.3`}</pre>
+                </div>
+              </div>
+
+              {/* Support */}
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h4 className="text-white font-bold mb-4">💡 Need Help?</h4>
+                <p className="text-sm text-slate-400 mb-4">
+                  Check the API documentation or contact support
+                </p>
+                
+                <a
+                  href="/api-docs"
+                  className="block bg-blue-600 hover:bg-blue-700 text-white text-center font-bold py-2 px-4 rounded-lg transition"
+                >
+                  View API Docs
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* RESULTS TAB */}
+        {activeTab === "results" && (
+          <div className="mb-8">
+            {uploadResult ? (
+              <div className="space-y-6">
+                {/* Result Summary */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                    <p className="text-slate-400 text-xs font-semibold uppercase mb-2">
+                      📁 File Name
+                    </p>
+                    <p className="text-lg font-bold text-white">
+                      {uploadResult.filename}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                    <p className="text-slate-400 text-xs font-semibold uppercase mb-2">
+                      📊 Recession Probability
+                    </p>
+                    <p className="text-3xl font-bold text-blue-400">
+                      {(uploadResult.recession_probability * 100).toFixed(1)}%
+                    </p>
+                  </div>
+
+                  <div
+                    className={`${
+                      getStatusDisplay(uploadResult.status).bgColor
+                    } rounded-lg p-6 border border-slate-700`}
+                  >
+                    <p className="text-slate-400 text-xs font-semibold uppercase mb-2">
+                      🚨 Status
+                    </p>
+                    <p
+                      className={`text-2xl font-bold ${
+                        getStatusDisplay(uploadResult.status).color
+                      }`}
+                    >
+                      {getStatusDisplay(uploadResult.status).icon}{" "}
+                      {getStatusDisplay(uploadResult.status).label}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                    <p className="text-slate-400 text-xs font-semibold uppercase mb-2">
+                      📈 Rows Analyzed
+                    </p>
+                    <p className="text-3xl font-bold text-green-400">
+                      {uploadResult.num_rows}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Analysis Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                    <h4 className="text-white font-bold mb-4">💡 AI Analysis</h4>
+                    <p className="text-slate-300 text-sm leading-relaxed">
+                      {uploadResult.explanation}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                    <h4 className="text-white font-bold mb-4">🔔 Key Signals</h4>
+                    <p className="text-slate-300 text-sm leading-relaxed">
+                      {uploadResult.signals || "No major signals detected"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Metadata */}
+                <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                  <h4 className="text-white font-bold mb-4">📋 Prediction Details</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-slate-400 text-xs">Created At</p>
+                      <p className="text-white font-semibold">
+                        {new Date(uploadResult.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-xs">Rows Processed</p>
+                      <p className="text-white font-semibold">
+                        {uploadResult.num_rows}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-xs">Probability</p>
+                      <p className="text-white font-semibold">
+                        {(uploadResult.probability * 100).toFixed(2)}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-xs">File</p>
+                      <p className="text-white font-semibold truncate">
+                        {uploadResult.filename}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                    💾 Save Analysis
+                  </button>
+                  <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                    📊 Export Report
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("upload")}
+                    className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded-lg transition"
+                  >
+                    📤 Upload Another
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-slate-800 rounded-lg p-12 border border-slate-700 text-center">
+                <p className="text-slate-400 text-lg mb-4">No results yet</p>
+                <p className="text-slate-500 text-sm mb-6">
+                  Upload a CSV file to see prediction results
+                </p>
+                <button
+                  onClick={() => setActiveTab("upload")}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition"
+                >
+                  Upload CSV →
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* HISTORY TAB */}
+        {activeTab === "history" && (
+          <div className="mb-8">
+            {historyLoading ? (
+              <div className="bg-slate-800 rounded-lg p-12 border border-slate-700 text-center">
+                <p className="text-slate-400">Loading history...</p>
+              </div>
+            ) : history.length > 0 ? (
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-white mb-6">
+                  📋 Prediction History ({history.length} total)
+                </h3>
+
+                {history.map((prediction, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() =>
+                      setSelectedHistoryItem(
+                        selectedHistoryItem === idx ? null : idx
+                      )
+                    }
+                    className="bg-slate-800 rounded-lg p-6 border border-slate-700 cursor-pointer hover:border-slate-600 transition"
+                  >
+                    {/* Main Row */}
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <h4 className="text-white font-bold text-lg">
+                          {prediction.filename}
+                        </h4>
+                        <p className="text-slate-400 text-sm">
+                          {new Date(prediction.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-blue-400">
+                            {(prediction.recession_probability * 100).toFixed(
+                              1
+                            )}
+                            %
+                          </p>
+                          <p className="text-xs text-slate-500">Probability</p>
+                        </div>
+                        <div
+                          className={`px-3 py-1 rounded ${
+                            getStatusDisplay(prediction.status).bgColor
+                          }`}
+                        >
+                          <p
+                            className={`font-bold ${
+                              getStatusDisplay(prediction.status).color
+                            }`}
+                          >
+                            {getStatusDisplay(prediction.status).icon}{" "}
+                            {getStatusDisplay(prediction.status).label}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Expandable Details */}
+                    {selectedHistoryItem === idx && (
+                      <div className="mt-4 pt-4 border-t border-slate-700 space-y-3">
+                        <p className="text-slate-300 text-sm">
+                          <span className="text-slate-400">Rows:</span>{" "}
+                          {prediction.num_rows}
+                        </p>
+                        <div>
+                          <p className="text-slate-400 text-sm font-semibold mb-2">
+                            Explanation
+                          </p>
+                          <p className="text-slate-300 text-sm">
+                            {prediction.explanation}
+                          </p>
+                        </div>
+                        {prediction.signals && (
+                          <div>
+                            <p className="text-slate-400 text-sm font-semibold mb-2">
+                              Signals
+                            </p>
+                            <p className="text-slate-300 text-sm">
+                              {prediction.signals}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-slate-800 rounded-lg p-12 border border-slate-700 text-center">
+                <p className="text-slate-400 text-lg mb-4">No predictions yet</p>
+                <p className="text-slate-500 text-sm mb-6">
+                  Upload a CSV file to see it in your history
+                </p>
+                <button
+                  onClick={() => setActiveTab("upload")}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition"
+                >
+                  Upload CSV →
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SETTINGS TAB */}
+        {activeTab === "settings" && (
+          <div className="mb-8 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Account Settings */}
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h3 className="text-lg font-bold text-white mb-6">👤 Account Settings</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-300 mb-2">
+                      Username
+                    </label>
+                    <input
+                      type="text"
+                      value={username}
+                      disabled
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-300 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      disabled
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-400"
+                    />
+                  </div>
+
+                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                    🔐 Change Password
+                  </button>
+                </div>
+              </div>
+
+              {/* Alert Configuration */}
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h3 className="text-lg font-bold text-white mb-6">🔔 Alert Configuration</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-300 mb-2">
+                      Alert Threshold (%)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={alertThreshold}
+                      onChange={(e) => setAlertThreshold(parseInt(e.target.value))}
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">
+                      Send alert when probability exceeds this threshold
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-300 mb-2">
+                      Alert Email
+                    </label>
+                    <input
+                      type="email"
+                      value={alertEmail}
+                      onChange={(e) => setAlertEmail(e.target.value)}
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleSaveAlert}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition"
+                  >
+                    💾 Save Alert Settings
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Preferences */}
+            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+              <h3 className="text-lg font-bold text-white mb-6">⚙️ Preferences</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white font-semibold">Email Notifications</p>
+                    <p className="text-slate-400 text-sm">Receive alerts via email</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="w-5 h-5" />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white font-semibold">Dark Mode</p>
+                    <p className="text-slate-400 text-sm">Always enabled</p>
+                  </div>
+                  <input type="checkbox" defaultChecked disabled className="w-5 h-5" />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white font-semibold">Data Analytics</p>
+                    <p className="text-slate-400 text-sm">Help us improve the model</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="w-5 h-5" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* API ACCESS TAB */}
+        {activeTab === "api" && (
+          <div className="mb-8 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* API Key */}
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h3 className="text-lg font-bold text-white mb-4">🔑 API Key</h3>
+                <div className="bg-slate-900 rounded p-4 mb-4">
+                  <p className="font-mono text-xs text-slate-300 break-all">
+                    {token ? `${token.substring(0, 20)}...${token.substring(token.length - 10)}` : "No token"}
+                  </p>
+                </div>
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition mb-2">
+                  📋 Copy API Key
+                </button>
+                <button className="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded-lg transition">
+                  🔄 Regenerate Key
+                </button>
+              </div>
+
+              {/* Endpoint */}
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h3 className="text-lg font-bold text-white mb-4">🌐 API Endpoint</h3>
+                <div className="bg-slate-900 rounded p-4 mb-4">
+                  <p className="font-mono text-xs text-slate-300 break-all">
+                    http://localhost:5000/api/v1/recession/predict
+                  </p>
+                </div>
+                <p className="text-slate-400 text-sm mb-4">
+                  POST endpoint for custom predictions
+                </p>
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                  📖 View Full Docs
+                </button>
+              </div>
+            </div>
+
+            {/* Usage Example */}
+            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+              <h3 className="text-lg font-bold text-white mb-4">💻 Usage Example</h3>
+              <div className="bg-slate-900 rounded p-4 text-xs font-mono text-slate-300 overflow-x-auto">
+                <pre>{`curl -X POST http://localhost:5000/api/v1/recession/predict \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -F "file=@data.csv"
+
+# Response:
+{
+  "filename": "data.csv",
+  "recession_probability": 0.62,
+  "status": "alert",
+  "num_rows": 120,
+  "explanation": "Model indicates high recession risk..."
+}`}</pre>
+              </div>
+            </div>
+
+            {/* Rate Limits */}
+            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+              <h3 className="text-lg font-bold text-white mb-4">📊 Rate Limits</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <p className="text-slate-400 mb-2">Requests per minute</p>
+                  <p className="text-2xl font-bold text-blue-400">60</p>
+                </div>
+                <div>
+                  <p className="text-slate-400 mb-2">Max file size</p>
+                  <p className="text-2xl font-bold text-blue-400">10MB</p>
+                </div>
+                <div>
+                  <p className="text-slate-400 mb-2">Max rows per file</p>
+                  <p className="text-2xl font-bold text-blue-400">10K</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="bg-slate-900 border-t border-slate-700 py-6 mt-12">
+        <div className="max-w-7xl mx-auto px-4 text-center text-slate-500 text-xs">
+          <p>Researcher Portal | Advanced prediction tools for data scientists</p>
+          <p className="mt-2">API: http://localhost:5000 | Support: support@recession-predictor.ai</p>
+        </div>
+      </div>
     </div>
-  )
+  );
 }

@@ -1,37 +1,42 @@
 """
-Central configuration. Change DATA_DIR / MODEL_DIR here if you move files.
+Configuration for India Recession Predictor Backend
 """
 
 import os
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
+from pathlib import Path
 
 class Config:
-    # Where your CSV datasets live (copy your 12_master_ml_dataset.csv etc. here)
-    DATA_DIR = os.path.join(BASE_DIR, "data")
-
-    # Where your trained model .pkl files live (rf_ft_finbert.pkl, scaler_*.pkl, features_*.pkl)
-    MODEL_DIR = os.path.join(BASE_DIR, "models")
-
-    # Where downloaded policy documents + FinBERT scores live
-    POLICY_DIR = os.path.join(BASE_DIR, "policy_docs")
-
-    # Alert / watch thresholds (from your PRD)
-    ALERT_THRESHOLD = 0.60
-    WATCH_THRESHOLD = 0.20
-
-    # Model file name candidates, tried in order (matches your Streamlit notebook logic)
+    """Base configuration"""
+    
+    # Paths
+    BASE_DIR = Path(__file__).parent
+    MODEL_DIR = BASE_DIR / "models"
+    DATA_DIR = BASE_DIR / "data"
+    DATABASE = BASE_DIR / "predictions.db"
+    UPLOAD_DIR = BASE_DIR / "uploads"
+    
+    # Model candidates (will use first one that exists)
     MODEL_CANDIDATES = [
-        ("rf_ft_finbert", "scaler_ft_finbert", "features_ft_finbert"),
-        ("rf_scaled_v1", "scaler_scaled_v1", "features_scaled_v1"),
-        ("rf_targeted", "scaler_targeted", "features_targeted"),
+        ("rf_extended_2000", "scaler_extended_2000", "features_extended_2000"),
+        ("rf_extended", "scaler_extended", "features_extended"),
     ]
-
-    # Dataset file candidates, tried in order
+    
+    # Dataset candidates
     DATASET_CANDIDATES = [
-        "15_master_ft_finbert.csv",
-        "14_master_scaled_features.csv",
-        "13_master_ml_enhanced.csv",
+        "extended_2000_2026.csv",
+        "extended_2000_2026_with_sentiment.csv",
         "12_master_ml_dataset.csv",
     ]
+    
+    # Thresholds for status
+    ALERT_THRESHOLD = 0.60
+    WATCH_THRESHOLD = 0.40
+    
+    # Flask
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
+    DEBUG = True
+    
+    # Create directories if they don't exist
+    MODEL_DIR.mkdir(exist_ok=True)
+    DATA_DIR.mkdir(exist_ok=True)
+    UPLOAD_DIR.mkdir(exist_ok=True)
